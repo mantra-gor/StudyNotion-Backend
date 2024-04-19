@@ -129,6 +129,9 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# MacOS File System
+.DS_Store
+
 ### Node Patch ###
 # Serverless Webpack directories
 .webpack/
