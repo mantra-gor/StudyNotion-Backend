@@ -12,7 +12,14 @@ exports.sendOTP = async (req, res) => {
   try {
     // fetch email address from request body
     const { email } = req.body;
-    // TODO: validate email
+
+    // validate email
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email address is required field",
+      });
+    }
 
     // check is user is already exist
     const isUserPresent = await User.findOne({ email });
@@ -195,7 +202,7 @@ exports.login = async (req, res) => {
       const payload = {
         email: user.email,
         id: user._id,
-        role: user.role,
+        accoundType: user.accoundType,
       };
       const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "2h",
