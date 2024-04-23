@@ -131,7 +131,6 @@ dist
 
 # MacOS File System
 .DS_Store
-
 ### Node Patch ###
 # Serverless Webpack directories
 .webpack/
