@@ -35,6 +35,10 @@ const coursesSchema = new mongoose.Schema(
         ref: "RatingsAndReview",
       },
     ],
+    tags: {
+      type: [String],
+      required: true,
+    },
     categories: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -50,6 +54,7 @@ const coursesSchema = new mongoose.Schema(
     instructor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
     keyFeatures: [
       {
@@ -57,6 +62,10 @@ const coursesSchema = new mongoose.Schema(
         trim: true,
       },
     ],
+    status: {
+      type: String,
+      enum: ["Draft", "Published"],
+    },
   },
   { timestamps: true }
 );

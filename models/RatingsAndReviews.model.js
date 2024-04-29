@@ -11,6 +11,18 @@ const ratingsAndReviewsSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    user: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    course: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Courses",
+      },
+    ],
   },
   { timestamps: true }
 );

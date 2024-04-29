@@ -101,7 +101,7 @@ exports.createCourse = async (req, res) => {
   }
 };
 
-// createCourse hnadler function
+// createCourse handler function
 exports.showAllCourses = async (req, res) => {
   try {
     const allCourses = Course.find(
@@ -115,8 +115,61 @@ exports.showAllCourses = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({
-      success: true,
+      success: false,
       message: "Something went wrong while fetching all course",
+      error: error.message,
+    });
+  }
+};
+
+// get all details of course
+exports.getCourseDetails = async (req, res) => {
+  try {
+    // fetch data
+    const { courseID } = req.body;
+
+    // validate the data
+    if (!courseID) {
+      return res.status(400).json({
+        success: false,
+        message: "Course ID is required",
+      });
+    }
+
+    // getting and validating the data from db
+    const course = await Course.findById(courseID)
+      .populate({
+        path: "instructor",
+        populate: [{ path: "additionalDetails" }, { path: "courses" }],
+      })
+      .populate({ path: "courseContent", populate: { path: "subSection" } })
+      .populate("ratingsAndReviews")
+      .populate({ path: "categories", select: "name description" })
+      .populate({
+        path: "studentsEnrolled",
+        populate: [
+          { path: "additionalDetails" },
+          { path: "courses" },
+          { path: "courseProgress" },
+        ],
+      });
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
+    }
+
+    // return response
+    return res.status(200).json({
+      success: false,
+      message: "Course details fetched successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while fetching course details",
       error: error.message,
     });
   }
