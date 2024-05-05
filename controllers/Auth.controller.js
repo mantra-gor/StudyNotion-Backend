@@ -103,8 +103,7 @@ exports.signup = async (req, res) => {
     if (password !== confirmPassword) {
       return res.status(400).json({
         success: false,
-        message:
-          "The passwords provided do not match. Please ensure both passwords are the same.",
+        message: "Please ensure both passwords are the same.",
       });
     }
 
@@ -252,7 +251,7 @@ exports.changePassword = async (req, res) => {
 
     // get the user details from datbase
     const user = await User.findById(req.user._id);
-    // TODO: try with out this line, use only req.user
+    // TODO: try without this line, use only req.user
 
     // compare oldPassword with database
     if (!(await bcrypt.compare(oldPassword, user.password))) {

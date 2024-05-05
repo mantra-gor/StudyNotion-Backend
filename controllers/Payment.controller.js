@@ -12,7 +12,7 @@ exports.capturePayment = async (req, res) => {
     const { userID } = req.user;
 
     // validate course id and user id
-    if (!(courseID || userID)) {
+    if (!(courseID & userID)) {
       return res.status(400).json({
         success: false,
         message: "Course ID and User ID are required",

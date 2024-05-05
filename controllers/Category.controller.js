@@ -1,4 +1,6 @@
-const Category = require("../models/");
+const { default: mongoose } = require("mongoose");
+const Category = require("../models/Category.model.js");
+const Course = require("../models/Courses.model.js");
 
 // Create
 exports.createCategory = async (req, res) => {
@@ -67,6 +69,75 @@ exports.getAllCategories = async (req, res) => {
   }
 };
 
-// Update
+// categoryPageDetails
+exports.createPageDetails = async (req, res) => {
+  try {
+    // get caterogy id
+    const { categoryId } = req.body;
 
-// Delete
+    // validate category id
+    if (!categoryId) {
+      return res.status(400).json({
+        success: false,
+        message: "Category id is required",
+      });
+    }
+
+    // get courses according to course id
+    const selectedCourses = await Course.find({
+      categories: { $eq: mongoose.Types.ObjectId(categoryId) },
+    });
+
+    // check weather courses availabe of the course id or not
+    if (selectedCourses === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
+    }
+
+    // also provide other courses than the id and top 5 trending courses too
+    const otherCourses = await Course.find({
+      _id: { $nin: selectedCourses.map((course) => course._id) },
+    });
+
+    const trendingCourse = await Course.aggregate([
+      {
+        $match: {
+          _id: { $nin: selectedCourses.map((course) => course._id) },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalStudents: { $sum: "$studentsEnrolled" },
+          courses: { $push: "$$ROOT" }, // Include all fields of the course document
+        },
+      },
+      {
+        $sort: { totalStudents: 1 },
+      },
+      {
+        limit: 5,
+      },
+    ]);
+
+    // return the response
+    return res.status(200).json({
+      success: true,
+      message: "Courses fetched as per the category successfully",
+      data: {
+        selectedCourses,
+        otherCourses,
+        trendingCourse,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message:
+        "Something went wrong while fetching courses according to category",
+      error: error.message,
+    });
+  }
+};

@@ -15,12 +15,12 @@ exports.createCourse = async (req, res) => {
     // validate the data
     if (
       !(
-        title ||
-        description ||
-        price ||
-        language ||
-        keyFeatures ||
-        category ||
+        title &
+        description &
+        price &
+        language &
+        keyFeatures &
+        category &
         thumbnail
       )
     ) {
@@ -101,7 +101,7 @@ exports.createCourse = async (req, res) => {
   }
 };
 
-// createCourse handler function
+// show all courses handler function
 exports.showAllCourses = async (req, res) => {
   try {
     const allCourses = Course.find(

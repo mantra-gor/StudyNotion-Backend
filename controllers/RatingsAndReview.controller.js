@@ -9,7 +9,7 @@ exports.createRatingAndReview = async (req, res) => {
     const { userID } = req.user;
 
     // validate the data
-    if (!(courseID || rating || review || userID)) {
+    if (!(courseID & rating & review & userID)) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
@@ -38,6 +38,21 @@ exports.createRatingAndReview = async (req, res) => {
           "Only enrolled students are allowed to write rating and review.",
       });
     }
+    // we can also find by this method below
+    /* // TODO: Testing Required
+      const isStudentEnrolled = await Course.findOne({
+        _id: courseID,
+        studentsEnrolled: { $elemMatch: { $eq: userID } },
+      });
+
+      if (!isStudentEnrolled) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "Only enrolled students are allowed to write rating and review.",
+        });
+      }
+    */
 
     // check is user is writing the review for first time only
     const isAlreadyReviewed = await RatingsAndReview.findOne({
@@ -114,6 +129,18 @@ exports.getAverageRating = async (req, res) => {
       averageRating = sum / ratingsAndReviewsArray.length;
     }
 
+    // getting the average of ratings by aggregation pipeline
+    const averageOfRating = await RatingsAndReview.aggregate([
+      {
+        $group: {
+          _id: "$courseID",
+          averageRating: {
+            $avg: "$rating",
+          },
+        },
+      },
+    ]);
+
     // return response
     return res.status(200).json({
       success: true,
@@ -129,7 +156,7 @@ exports.getAverageRating = async (req, res) => {
   }
 };
 
-// get all rating based on course
+// get all rating and reviews based on course
 exports.getRatingsAndReviews = async (req, res) => {
   try {
     // get the data
@@ -173,8 +200,17 @@ exports.getAllRatingsAndReviews = async (req, res) => {
       review: true,
       user: true,
       course: true,
-    });
-
+    })
+      .sort({ rating: 1 })
+      .populate({
+        path: "User",
+        select: "firstName lastName avatar email",
+      })
+      .populate({
+        path: "Course",
+        select: "title",
+      })
+      .exec();
     // return response
     return res.status(200).json({
       success: true,
