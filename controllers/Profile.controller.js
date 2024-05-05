@@ -57,6 +57,7 @@ exports.updateProfile = async (req, res) => {
 };
 
 // delete account
+// TODO: Cron Job should be applied here
 exports.deleteAccount = async (req, res) => {
   try {
     // get id

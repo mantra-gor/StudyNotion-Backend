@@ -15,6 +15,14 @@ exports.createRatingAndReview = async (req, res) => {
         message: "All fields are required",
       });
     }
+    // only students can rate and review courses
+    if (req.user.accoundType !== "Student") {
+      return res.status(403).json({
+        success: false,
+        message: "Only students are allowed to rate and review the courses",
+      });
+    }
+    // rating should be only between 0 to 5
     if (rating > 5 || rating < 0) {
       return res.status(422).json({
         success: false,

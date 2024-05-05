@@ -70,7 +70,7 @@ exports.getAllCategories = async (req, res) => {
 };
 
 // categoryPageDetails
-exports.createPageDetails = async (req, res) => {
+exports.categoryPageDetails = async (req, res) => {
   try {
     // get caterogy id
     const { categoryId } = req.body;
