@@ -12,6 +12,23 @@ const port = process.env.PORT || 4000;
 // initialize the express application
 const app = express();
 
+// connect to database
+database.connect();
+
+// adding middlewares
+app.use(express.json());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
+app.use(fileUpload({ useTempFiles: true, tempFileDir: "/tmp/" }));
+
+// connect to cloudinary
+cloudinaryConnect();
+
 // defining routes
 const userRoutes = require("./routes/User.routes.js");
 const profileRoutes = require("./routes/Profile.routes.js");
@@ -30,23 +47,6 @@ app.get("/", (req, res) => {
     message: "Welcome to studynotion",
   });
 });
-
-// connect to database
-database.connect();
-
-// adding middlewares
-app.use(express.json());
-app.use(cookieParser());
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-  })
-);
-app.use(fileUpload({ useTempFiles: true, tempFileDir: true }));
-
-// connect to cloudinary
-cloudinaryConnect();
 
 // activate the server
 app.listen(port, () => {

@@ -6,19 +6,19 @@ const Course = require("../models/Courses.model.js");
 exports.createCategory = async (req, res) => {
   try {
     // fetch data from req body
-    const { category, description } = req.body;
+    const { name, description } = req.body;
 
     // validate data
-    if (!category || !description) {
+    if (!name || !description) {
       return res.status(400).json({
         success: false,
-        message: "Category and description is required fields",
+        message: "Category name and description is required fields",
       });
     }
 
     // check weather this category is already exists of not
     const categoryObjectInDb = await Category.findOne({
-      category: { $regex: new RegExp(`^${category}$`, "i") },
+      name: { $regex: new RegExp(`^${name}$`, "i") },
     });
     if (categoryObjectInDb) {
       return res.status(409).json({
@@ -29,7 +29,7 @@ exports.createCategory = async (req, res) => {
 
     // create db entry
     const newCategory = Category.create({
-      category: category,
+      name: name,
       description: description,
     });
 
@@ -52,7 +52,10 @@ exports.createCategory = async (req, res) => {
 exports.getAllCategories = async (req, res) => {
   try {
     // get all entry from db
-    const allCategories = Category.find({}, { name: true, description: true });
+    const allCategories = await Category.find(
+      {},
+      { name: true, description: true }
+    );
 
     // return response
     return res.status(200).json({
@@ -85,7 +88,7 @@ exports.categoryPageDetails = async (req, res) => {
 
     // get courses according to course id
     const selectedCourses = await Course.find({
-      categories: { $eq: mongoose.Types.ObjectId(categoryId) },
+      category: { $eq: mongoose.Types.ObjectId(categoryId) },
     });
 
     // check weather courses availabe of the course id or not

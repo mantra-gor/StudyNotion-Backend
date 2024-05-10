@@ -18,7 +18,7 @@ exports.resetPasswordToken = async (req, res) => {
     }
 
     // find the user from db
-    const user = User.findOne({ email });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -101,7 +101,7 @@ exports.resetPassword = async (req, res) => {
     }
 
     // verifying the token from db
-    const user = User.findOne({ token });
+    const user = await User.findOne({ token });
 
     if (!user) {
       return res.status(401).json({
@@ -119,10 +119,10 @@ exports.resetPassword = async (req, res) => {
     }
 
     // hashing the password
-    const hashedPassword = bcrypt.hash(password);
+    const hashedPassword = await bcrypt.hash(password, 8);
 
     // updating the password to db
-    const updatedUserDetails = User.findOneAndUpdate(
+    const updatedUserDetails = await User.findOneAndUpdate(
       { email: user.email },
       {
         password: hashedPassword,
@@ -147,7 +147,7 @@ exports.resetPassword = async (req, res) => {
       message: "Your password has been successfully reset.",
     });
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Something went wrong while reset your password",
       error: error.message,

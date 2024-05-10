@@ -7,14 +7,14 @@ const profileSchema = new mongoose.Schema(
       enum: ["Male", "Female", "Other", null],
     },
     dob: {
-      type: Date,
+      type: String,
     },
     about: {
       type: String,
       trim: true,
     },
     phoneNo: {
-      type: Number,
+      type: String,
       trim: true,
     },
   },

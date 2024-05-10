@@ -4,18 +4,19 @@ require("dotenv").config();
 // auth
 exports.auth = async (req, res, next) => {
   try {
-    const token = req.header("Authorization").replace("Bearer", "");
+    const token = req.header("Authorization")?.replace("Bearer ", "");
     if (!token) {
-      return res(403).json({
+      return res.status(403).json({
         success: false,
         message: "Token not found",
       });
     }
     try {
-      const payloadData = jwt.verify(token, process.env.JWT_SECRET);
+      const payloadData = await jwt.verify(token, process.env.JWT_SECRET);
       req.user = payloadData;
     } catch (error) {
-      return res(400).json({
+      console.error(error, "JWT_ERROR");
+      return res.status(400).json({
         success: false,
         message: "Token can not be verified",
         error: error.message,
@@ -24,7 +25,7 @@ exports.auth = async (req, res, next) => {
 
     next();
   } catch (error) {
-    return res(500).json({
+    return res.status(500).json({
       success: false,
       message: "Something went wrong while authentication",
       error: error.message,
@@ -36,8 +37,8 @@ exports.auth = async (req, res, next) => {
 exports.isStudent = async (req, res, next) => {
   try {
     const user = req.user;
-    if (!user.accoundType === "Student") {
-      return res(403).json({
+    if (!user.accountType === "Student") {
+      return res.status(403).json({
         success: false,
         message:
           "You are not authorized! This is a protected route for students only.",
@@ -46,7 +47,7 @@ exports.isStudent = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    return res(500).json({
+    return res.status(500).json({
       success: false,
       message: "Something went wrong while authenticating student",
       error: error.message,
@@ -58,8 +59,8 @@ exports.isStudent = async (req, res, next) => {
 exports.isAdmin = async (req, res, next) => {
   try {
     const user = req.user;
-    if (!user.accoundType === "Admin") {
-      return res(403).json({
+    if (!user.accountType === "Admin") {
+      return res.status(403).json({
         success: false,
         message:
           "You are not authorized! This is a protected route for admin only.",
@@ -68,7 +69,7 @@ exports.isAdmin = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    return res(500).json({
+    return res.status(500).json({
       success: false,
       message: "Something went wrong while authenticating admin",
       error: error.message,
@@ -80,8 +81,8 @@ exports.isAdmin = async (req, res, next) => {
 exports.isInstructor = async (req, res, next) => {
   try {
     const user = req.user;
-    if (!user.accoundType === "Instructor") {
-      return res(403).json({
+    if (!user.accountType === "Instructor") {
+      return res.status(403).json({
         success: false,
         message:
           "You are not authorized! This is a protected route for instructor only.",
@@ -90,7 +91,7 @@ exports.isInstructor = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    return res(500).json({
+    return res.status(500).json({
       success: false,
       message: "Something went wrong while authenticating admin",
       error: error.message,

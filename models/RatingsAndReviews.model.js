@@ -26,3 +26,5 @@ const ratingsAndReviewsSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+module.exports = mongoose.model("RatingsAndReview", ratingsAndReviewsSchema);

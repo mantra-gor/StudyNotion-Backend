@@ -1,3 +1,4 @@
+const moment = require("moment");
 const Course = require("../models/Courses.model.js");
 const Profile = require("../models/Profile.model.js");
 const User = require("../models/User.model.js");
@@ -25,7 +26,7 @@ exports.updateProfile = async (req, res) => {
     // get the data which user wants to update
     const updateDetails = {};
     if (gender) updateDetails.gender = gender;
-    if (dob) updateDetails.dob = dob;
+    if (dob) updateDetails.dob = moment(dob).format("DD-MM-YYYY");
     if (about) updateDetails.about = about;
     if (phoneNo) updateDetails.phoneNo = phoneNo;
 

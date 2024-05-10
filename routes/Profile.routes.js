@@ -12,13 +12,13 @@ const {
 const { auth } = require("../middlewares/Auth.middleware.js");
 
 // ********************************************************************************************************
-//                                            PROFILE ROUTES
+//?                                            PROFILE ROUTES
 // ********************************************************************************************************
 
 // profile update can only be done if you are logged in
-router.put("/updateProfile", auth, updateProfile);
+router.put("/update-profile", auth, updateProfile);
 
 // deleting the account needed the user to be logged in
-router.delete("/deleteAccount", auth, deleteAccount);
+router.delete("/delete-account", auth, deleteAccount);
 
 module.exports = router;

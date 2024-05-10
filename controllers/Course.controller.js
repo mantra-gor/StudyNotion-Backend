@@ -1,38 +1,47 @@
 const Course = require("../models/Courses.model.js");
 const Category = require("../models/Category.model.js");
 const User = require("../models/User.model.js");
-const fileUploader = require("../utils/fileUploader.utils.js");
+const { fileUploader } = require("../utils/fileUploader.utils.js");
 require("dotenv").config();
 
 // createCourse hnadler function
 exports.createCourse = async (req, res) => {
   try {
     // fetch the data
-    const { title, description, price, language, keyFeatures, category } =
+    const { title, description, price, language, keyFeatures, category, tags } =
       req.body;
     const thumbnail = req.files.courseThumbnail;
 
     // validate the data
-    if (
-      !(
-        title &
-        description &
-        price &
-        language &
-        keyFeatures &
-        category &
-        thumbnail
-      )
-    ) {
+    const requiredFields = [
+      "title",
+      "description",
+      "price",
+      "language",
+      "keyFeatures",
+      "category",
+      "tags",
+    ];
+
+    for (const field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(400).json({
+          success: false,
+          message: `${field} is required`,
+        });
+      }
+    }
+
+    if (!thumbnail) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required",
+        message: "Thumbnail is required",
       });
     }
 
     // get the instructor details and validate it by its role
     const instructorDetails = await User.findById({ _id: req.user.id });
-    if (instructorDetails.accoundType !== "Instructor") {
+    if (instructorDetails.accountType !== "Instructor") {
       return res.status(403).json({
         success: false,
         message: "You are not authorized to create new course",
@@ -62,6 +71,7 @@ exports.createCourse = async (req, res) => {
       language,
       keyFeatures,
       category,
+      tags,
       thumbnail: thumbnailDetails.secure_url,
       instructor: instructorDetails._id,
     });
@@ -94,7 +104,7 @@ exports.createCourse = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({
-      success: true,
+      success: false,
       message: "Something went wrong while creating new course",
       error: error.message,
     });
@@ -104,9 +114,16 @@ exports.createCourse = async (req, res) => {
 // show all courses handler function
 exports.showAllCourses = async (req, res) => {
   try {
-    const allCourses = Course.find(
+    const allCourses = await Course.find(
       {},
-      { title: true, description: true, thumbnail: true, instructor: true }
+      {
+        title: true,
+        description: true,
+        thumbnail: true,
+        instructor: true,
+        price: true,
+        category: true,
+      }
     );
     return res.status(200).json({
       success: true,
@@ -137,16 +154,18 @@ exports.getCourseDetails = async (req, res) => {
     }
 
     // getting and validating the data from db
-    const course = await Course.findById(courseID)
+    const courseDetails = await Course.findById(courseID)
       .populate({
         path: "instructor",
+        select: "-password -courseProgress -email",
         populate: [{ path: "additionalDetails" }, { path: "courses" }],
       })
       .populate({ path: "courseContent", populate: { path: "subSection" } })
       .populate("ratingsAndReviews")
-      .populate({ path: "categories", select: "name description" })
+      .populate({ path: "category", select: "name description" })
       .populate({
         path: "studentsEnrolled",
+        select: "-password -email",
         populate: [
           { path: "additionalDetails" },
           { path: "courses" },
@@ -154,7 +173,7 @@ exports.getCourseDetails = async (req, res) => {
         ],
       });
 
-    if (!course) {
+    if (!courseDetails) {
       return res.status(404).json({
         success: false,
         message: "Course not found",
@@ -165,6 +184,7 @@ exports.getCourseDetails = async (req, res) => {
     return res.status(200).json({
       success: false,
       message: "Course details fetched successfully",
+      data: courseDetails,
     });
   } catch (error) {
     return res.status(500).json({

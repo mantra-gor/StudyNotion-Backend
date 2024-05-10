@@ -51,23 +51,23 @@ const {
 // ********************************************************************************************************
 
 // Courses can only be created by the Instructors
-router.post("/createCourse", auth, isInstructor, createCourse);
+router.post("/create-course", auth, isInstructor, createCourse);
 
 // Get all registered courses
-router.get("/getAllCourses", showAllCourses);
+router.get("/get-all-courses", showAllCourses);
 
 // Get All details of a course
-router.post("/getAllDetailsOfCourse", getCourseDetails);
+router.post("/get-course-details", auth, getCourseDetails);
 
 // ********************************************************************************************************
 //?                                              CATEGORY ROUTES
 // ********************************************************************************************************
 
 // Category can only be created by the admin
-router.post("/createCategory", auth, isAdmin, createCategory);
+router.post("/create-category", auth, isAdmin, createCategory);
 
 // get all category
-router.get("/getAllCategories", getAllCategories);
+router.get("/get-all-category", getAllCategories);
 
 // categoryPageDetails
 router.post("/categoryPageDetails", categoryPageDetails);

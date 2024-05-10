@@ -84,19 +84,23 @@ exports.signup = async (req, res) => {
     } = req.body;
 
     // validate data
-    if (
-      !firstName ||
-      !lastName ||
-      !email ||
-      !phoneNo ||
-      !password ||
-      !confirmPassword ||
-      !otp
-    ) {
-      return res.status(403).json({
-        success: false,
-        message: "All fields are required",
-      });
+    const requiredFields = [
+      "firstName",
+      "lastName",
+      "email",
+      "phoneNo",
+      "password",
+      "confirmPassword",
+      "otp",
+    ];
+
+    for (const field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(403).json({
+          success: false,
+          message: `${field} is required`,
+        });
+      }
     }
 
     //  match both passwords
@@ -128,11 +132,12 @@ exports.signup = async (req, res) => {
         succes: false,
         message: "OTP Not Found",
       });
-    } else if (otp !== recentOTP) {
+    } else if (otp !== recentOTP[0].otp) {
       // Invalid OTP
       return res.status(400).json({
         success: false,
         message: "Invalid OTP",
+        data: recentOTP,
       });
     }
 
@@ -140,7 +145,7 @@ exports.signup = async (req, res) => {
     const hasedPassword = await bcrypt.hash(password, 8);
 
     // create profile of the user
-    const profileDetails = Profile.create({
+    const profileDetails = await Profile.create({
       gender: null,
       dob: null,
       about: null,
@@ -148,14 +153,14 @@ exports.signup = async (req, res) => {
     });
 
     // create entry in DB
-    const user = User.create({
+    const user = await User.create({
       firstName,
       lastName,
       email,
       password: hasedPassword,
-      accoundType,
+      accountType,
       additionalDetails: profileDetails._id,
-      image: `https://api.dicebear.com/8.x/initials/svg?seed=${firstName}%20${lastName}`,
+      avatar: `https://api.dicebear.com/8.x/initials/svg?seed=${firstName}%20${lastName}`,
     });
 
     // return response
@@ -188,7 +193,7 @@ exports.login = async (req, res) => {
     }
 
     // check does user exist or not
-    const user = User.findOne({ email }).populate("additionalDetails");
+    const user = await User.findOne({ email }).populate("additionalDetails");
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -201,9 +206,9 @@ exports.login = async (req, res) => {
       const payload = {
         email: user.email,
         id: user._id,
-        accoundType: user.accoundType,
+        accountType: user.accountType,
       };
-      const token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "2h",
       });
       user.token = token;
@@ -246,6 +251,14 @@ exports.changePassword = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
+      });
+    }
+
+    // check is user authenticated or not
+    if (!req.user._id) {
+      return res.status(403).json({
+        succes: false,
+        message: "User need to authenticated first to change password.",
       });
     }
 

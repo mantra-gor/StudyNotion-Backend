@@ -10,7 +10,13 @@ const {
   changePassword,
 } = require("../controllers/Auth.controller.js");
 
-// importing middlewares
+// import reset password controllers
+const {
+  resetPasswordToken,
+  resetPassword,
+} = require("../controllers/ResetPassword.controller.js");
+
+// import middlewares
 const {
   auth,
   isStudent,
@@ -19,7 +25,7 @@ const {
 } = require("../middlewares/Auth.middleware.js");
 
 // ********************************************************************************************************
-//                                          AUTHENTICATION ROUTES
+//?                                          AUTHENTICATION ROUTES
 // ********************************************************************************************************
 
 // Signup a new user
@@ -29,6 +35,19 @@ router.post("/signup", signup);
 router.post("/login", login);
 
 // OTP will only sent to a user who is already exists in database
-router.post("/sendOTP", auth);
+router.post("/sendotp", sendOTP);
+
+// Password should only be changed by the user itself
+router.post("/change-password", auth, changePassword);
+
+// ********************************************************************************************************
+//?                                             RESET PASSWORD
+// ********************************************************************************************************
+
+// To reset password, token is sent to user's email
+router.post("/forget-password", resetPasswordToken);
+
+// To reset user's password after verification
+router.post("/reset-password", resetPassword);
 
 module.exports = router;

@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
     },
-    accoundType: {
+    accountType: {
       type: String,
       required: true,
       enum: ["Admin", "Student", "Instructor"],

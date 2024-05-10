@@ -16,7 +16,7 @@ exports.createRatingAndReview = async (req, res) => {
       });
     }
     // only students can rate and review courses
-    if (req.user.accoundType !== "Student") {
+    if (req.user.accountType !== "Student") {
       return res.status(403).json({
         success: false,
         message: "Only students are allowed to rate and review the courses",

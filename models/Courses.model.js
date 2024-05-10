@@ -35,11 +35,13 @@ const coursesSchema = new mongoose.Schema(
         ref: "RatingsAndReview",
       },
     ],
-    tags: {
-      type: [String],
-      required: true,
-    },
-    categories: {
+    tags: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
+    category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Categories",
     },
@@ -68,4 +70,4 @@ const coursesSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Courses", coursesSchema);
+module.exports = mongoose.model("Course", coursesSchema);
