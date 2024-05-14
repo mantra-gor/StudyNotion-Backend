@@ -77,7 +77,7 @@ router.post("/categoryPageDetails", categoryPageDetails);
 // ********************************************************************************************************
 
 // section can only be created by instructor
-router.post("/createSection", auth, isInstructor, createSection);
+router.post("/create-section", auth, isInstructor, createSection);
 
 // section can only be updated by instructor
 router.post("/updateSection", auth, isInstructor, updateSection);
@@ -90,7 +90,7 @@ router.post("/deleteSection", auth, isInstructor, deleteSection);
 // ********************************************************************************************************
 
 // subsection can only be created by instructor
-router.post("/createSubsection", auth, isInstructor, createSubSection);
+router.post("/create-subsection", auth, isInstructor, createSubSection);
 
 // subsection can only be updated by instructor
 router.post("/updateSubsection", auth, isInstructor, updateSubSection);

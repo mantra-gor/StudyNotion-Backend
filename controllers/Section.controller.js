@@ -6,11 +6,14 @@ exports.createSection = async (req, res) => {
     const { sectionName, courseID } = req.body;
 
     // data validation
-    if (!sectionName || !courseID) {
-      return res.status(500).json({
-        success: false,
-        message: "All fields are required",
-      });
+    const requiredFields = ["sectionName", "courseID"];
+    for (const field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(500).json({
+          success: false,
+          message: `${field} is required`,
+        });
+      }
     }
 
     // create section
