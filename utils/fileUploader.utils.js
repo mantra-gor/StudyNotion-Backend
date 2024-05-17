@@ -1,7 +1,7 @@
 const cloudinary = require("cloudinary").v2;
 
 exports.fileUploader = async (file, folder, height, quality) => {
-  const options = { folder, resourse_type: "auto" };
+  const options = { folder, resource_type: "auto" };
   if (height) {
     options.height = height;
   }
@@ -16,7 +16,7 @@ exports.deleteFile = async (fileUrl) => {
     const result = await cloudinary.uploader.delete_resources_by_prefix(
       fileUrl,
       {
-        resourse_type: "auto",
+        resource_type: "auto",
       }
     );
     return result;

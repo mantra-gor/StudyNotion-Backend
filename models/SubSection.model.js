@@ -8,7 +8,7 @@ const subSectionSchema = new mongoose.Schema(
       trim: true,
     },
     timeDuration: {
-      type: Number,
+      type: String,
       required: true,
     },
     description: {

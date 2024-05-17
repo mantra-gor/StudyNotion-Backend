@@ -35,8 +35,8 @@ exports.createSubSection = async (req, res) => {
     const newSubSection = await SubSection.create({
       title,
       description,
-      duration,
-      videoUrl: (await videoDetails).secure_url,
+      timeDuration: duration,
+      videoUrl: videoDetails.secure_url,
     });
 
     // update the section schema

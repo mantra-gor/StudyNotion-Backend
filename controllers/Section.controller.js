@@ -91,7 +91,7 @@ exports.updateSection = async (req, res) => {
 exports.deleteSection = async (req, res) => {
   try {
     // get the data
-    const { sectionID } = req.body;
+    const { sectionID, courseID } = req.params;
 
     // validate the data
     if (!sectionID) {
