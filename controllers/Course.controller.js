@@ -2,35 +2,30 @@ const Course = require("../models/Courses.model.js");
 const Category = require("../models/Category.model.js");
 const User = require("../models/User.model.js");
 const { fileUploader } = require("../utils/fileUploader.utils.js");
+const { USER_ROLES } = require("../config/constants.js");
+const { createCourseSchema } = require("../validations/Course.validations.js");
+const JoiErrorHandler = require("../utils/errorHandler.utils.js");
+const { thumbnailSchema } = require("../validations/General.validation.js");
+
 require("dotenv").config();
 
 // createCourse hnadler function
 exports.createCourse = async (req, res) => {
   try {
+    // validate the data using Joi
+    const { error, value } = createCourseSchema.validate(req.body);
+    const result = thumbnailSchema.validate({
+      thumbnail: req.files.courseThumbnail,
+    });
+    if (error || result.error) {
+      return res.status(400).json(JoiErrorHandler(error || result.error));
+    }
+
     // fetch the data
     const { title, description, price, language, keyFeatures, category, tags } =
-      req.body;
+      value;
+
     const thumbnail = req.files.courseThumbnail;
-
-    // validate the data
-    const requiredFields = [
-      "title",
-      "description",
-      "price",
-      "language",
-      "keyFeatures",
-      "category",
-      "tags",
-    ];
-
-    for (const field of requiredFields) {
-      if (!req.body[field]) {
-        return res.status(400).json({
-          success: false,
-          message: `${field} is required`,
-        });
-      }
-    }
 
     if (!thumbnail) {
       return res.status(400).json({
@@ -41,7 +36,7 @@ exports.createCourse = async (req, res) => {
 
     // get the instructor details and validate it by its role
     const instructorDetails = await User.findById({ _id: req.user.id });
-    if (instructorDetails.accountType !== "Instructor") {
+    if (instructorDetails.accountType !== USER_ROLES.INSTRUCTOR) {
       return res.status(403).json({
         success: false,
         message: "You are not authorized to create new course",

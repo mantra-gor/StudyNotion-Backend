@@ -1,20 +1,23 @@
 const { default: mongoose } = require("mongoose");
 const Category = require("../models/Category.model.js");
 const Course = require("../models/Courses.model.js");
+const {
+  createCategorySchema,
+  categoryPageDetailsSchema,
+} = require("../validations/Category.validation.js");
+const JoiErrorHandler = require("../utils/errorHandler.utils.js");
 
 // Create
 exports.createCategory = async (req, res) => {
   try {
-    // fetch data from req body
-    const { name, description } = req.body;
-
-    // validate data
-    if (!name || !description) {
-      return res.status(400).json({
-        success: false,
-        message: "Category name and description is required fields",
-      });
+    // validate the data using Joi
+    const { error, value } = createCategorySchema.validate(req.body);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
     }
+
+    // fetch data from req body
+    const { name, description } = value;
 
     // check weather this category is already exists of not
     const categoryObjectInDb = await Category.findOne({
@@ -28,7 +31,7 @@ exports.createCategory = async (req, res) => {
     }
 
     // create db entry
-    const newCategory = Category.create({
+    await Category.create({
       name: name,
       description: description,
     });
@@ -49,7 +52,7 @@ exports.createCategory = async (req, res) => {
 
 // Read
 // --> Get All Categories
-exports.getAllCategories = async (req, res) => {
+exports.getAllCategories = async (_, res) => {
   try {
     // get all entry from db
     const allCategories = await Category.find(
@@ -75,16 +78,14 @@ exports.getAllCategories = async (req, res) => {
 // categoryPageDetails
 exports.categoryPageDetails = async (req, res) => {
   try {
-    // get caterogy id
-    const { categoryId } = req.body;
-
-    // validate category id
-    if (!categoryId) {
-      return res.status(400).json({
-        success: false,
-        message: "Category id is required",
-      });
+    // validate the data using joi
+    const { error, value } = categoryPageDetailsSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
     }
+
+    // get caterogy id
+    const { categoryId } = value;
 
     // get courses according to course id
     const selectedCourses = await Course.find({

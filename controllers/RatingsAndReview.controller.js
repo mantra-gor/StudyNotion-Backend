@@ -1,5 +1,6 @@
 const RatingsAndReview = require("../models/RatingsAndReviews.model.js");
 const Course = require("../models/Courses.model.js");
+const { USER_ROLES } = require("../config/constants.js");
 
 // create rating
 exports.createRatingAndReview = async (req, res) => {
@@ -16,7 +17,7 @@ exports.createRatingAndReview = async (req, res) => {
       });
     }
     // only students can rate and review courses
-    if (req.user.accountType !== "Student") {
+    if (req.user.accountType !== USER_ROLES.STUDENT) {
       return res.status(403).json({
         success: false,
         message: "Only students are allowed to rate and review the courses",

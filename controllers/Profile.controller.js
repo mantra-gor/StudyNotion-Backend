@@ -2,6 +2,7 @@ const moment = require("moment");
 const Course = require("../models/Courses.model.js");
 const Profile = require("../models/Profile.model.js");
 const User = require("../models/User.model.js");
+const { accountDeletionCron } = require("../cron/accountDeletionCron.js");
 
 exports.updateProfile = async (req, res) => {
   try {
@@ -57,55 +58,48 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-// delete account
-// TODO: Cron Job should be applied here
-exports.deleteAccount = async (req, res) => {
+// delete account // Cron Job Added here
+exports.deleteAccountRequest = async (req, res) => {
   try {
-    // get id
-    const userID = req.user.id;
+    // get the user id
+    const userId = req.user.id;
 
-    // validate id
-    if (!userID) {
-      return res.status(400).json({
-        success: false,
-        message: "User ID is required field",
-      });
-    }
-
-    // delete user
-    const userDetails = User.findByIdAndDelete(userID);
-    if (!userDetails) {
+    // fetch the use details from db and validate
+    const user = await User.findById(userId);
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
+    if (user.isDeleted) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "Your account is already in process of deletion. This action can only be performed one time.",
+      });
+    }
 
-    // delete profile
-    await Profile.findByIdAndDelete(userDetails.additionalDetails);
+    // mark the flag true for soft deletion of the user and save the updated user
+    user.isDeleted = true;
+    await user.save();
 
-    // removing the user from all courses he/she has enrolled
-    await Course.updateMany(
-      {
-        studentsEnrolled: userID,
-      },
-      {
-        $pull: {
-          studentsEnrolled: userID,
-        },
-      }
-    );
+    // schedule the cron job for account deletion
+    await accountDeletionCron(userId);
 
-    // return response
-    return res.status(200).json({
+    // send the response to the user
+    res.status(200).json({
       success: true,
-      message: "You have deleted your account successfully",
+      message:
+        "Your account deletion is in process and will be permanently deleted in 4 days. If you wish to restore your account before then, you can do so. After 4 days, this action cannot be reversed.",
     });
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
-      message: "Something went wrong while deleting account",
+      message: "Something went wrong while deleting the account.",
       error: error.message,
     });
   }
 };
+
+// exports.retriveAccountRequest

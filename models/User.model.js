@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { USER_ROLES } = require("../config/constants");
 
 const userSchema = new mongoose.Schema(
   {
@@ -27,7 +28,7 @@ const userSchema = new mongoose.Schema(
     accountType: {
       type: String,
       required: true,
-      enum: ["Admin", "Student", "Instructor"],
+      enum: Object.values(USER_ROLES),
     },
     additionalDetails: {
       type: mongoose.Schema.Types.ObjectId,
@@ -51,6 +52,10 @@ const userSchema = new mongoose.Schema(
     },
     resetPasswordExipres: {
       type: Date,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
   {

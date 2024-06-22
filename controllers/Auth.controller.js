@@ -5,23 +5,27 @@ const otpGenerator = require("otp-generator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mailSender = require("../utils/mailSender.utils.js");
+const JoiErrorHandler = require("../utils/errorHandler.utils.js");
+const { USER_GENDER } = require("../config/constants.js");
+const {
+  sendOTPSchema,
+  signupSchema,
+  loginSchema,
+  changePasswordSchema,
+} = require("../validations/Auth.validations.js");
 require("dotenv").config();
 
 // send otp
 exports.sendOTP = async (req, res) => {
   try {
-    // fetch email address from request body
-    const { email } = req.body;
+    // validate coming data request body using joi
+    const { error, value } = sendOTPSchema.validate(req.body);
 
-    // validate email
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: "Email address is required field",
-      });
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
     }
+    const { email } = value;
 
-    // check is user is already exist
     const isUserPresent = await User.findOne({ email });
     if (isUserPresent) {
       return res.status(409).json({
@@ -71,45 +75,15 @@ exports.sendOTP = async (req, res) => {
 // signup
 exports.signup = async (req, res) => {
   try {
-    // fetch data
-    const {
-      firstName,
-      lastName,
-      email,
-      phoneNo,
-      accountType,
-      password,
-      confirmPassword,
-      otp,
-    } = req.body;
-
-    // validate data
-    const requiredFields = [
-      "firstName",
-      "lastName",
-      "email",
-      "phoneNo",
-      "password",
-      "confirmPassword",
-      "otp",
-    ];
-
-    for (const field of requiredFields) {
-      if (!req.body[field]) {
-        return res.status(403).json({
-          success: false,
-          message: `${field} is required`,
-        });
-      }
+    // validate coming data request body using joi
+    const { error, value } = signupSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
     }
 
-    //  match both passwords
-    if (password !== confirmPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "Please ensure both passwords are the same.",
-      });
-    }
+    // destructure data
+    const { firstName, lastName, email, phoneNo, accountType, password, otp } =
+      value;
 
     // check user already exists of not
     const existingUser = await User.findOne({ email });
@@ -146,7 +120,7 @@ exports.signup = async (req, res) => {
 
     // create profile of the user
     const profileDetails = await Profile.create({
-      gender: null,
+      gender: USER_GENDER.NULL,
       dob: null,
       about: null,
       phoneNo: phoneNo,
@@ -167,7 +141,7 @@ exports.signup = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "User is registered successfully",
-      user,
+      data: user,
     });
   } catch (error) {
     return res.status(500).json({
@@ -181,8 +155,14 @@ exports.signup = async (req, res) => {
 // login
 exports.login = async (req, res) => {
   try {
-    // get the data from body
-    const { email, password } = req.body;
+    // validating the data using Joi
+    const { error, value } = loginSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
+    }
+
+    // fetch the data from value
+    const { email, password } = value;
 
     // validate the data
     if (!email || !password) {
@@ -215,14 +195,22 @@ exports.login = async (req, res) => {
       user.password = undefined;
       delete user.password;
 
+      if (user.isDeleted) {
+        return res.status(200).json({
+          success: true,
+          message: "User has been requested for account deletion.",
+          data: user,
+        });
+      }
+
       // create cookie and send response
       const options = {
         expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 100),
       };
       res.cookie("token", token, options).status(200).json({
         success: true,
-        user,
         message: "Logged in successfully",
+        data: user,
       });
     } else {
       return res.status(403).json({
@@ -242,20 +230,17 @@ exports.login = async (req, res) => {
 // change password
 exports.changePassword = async (req, res) => {
   try {
-    // get data from req body
-    // get old password, new password, confirm password
-    const { oldPassword, newPassword, confirmPassword } = req.body;
-
-    // validate the data
-    if (!oldPassword || !newPassword || !confirmPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
+    // validate input data using Joi
+    const { error, value } = changePasswordSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
     }
 
+    // get old password, new password, confirm password from value
+    const { oldPassword, newPassword, confirmPassword } = value;
+
     // check is user authenticated or not
-    if (!req.user._id) {
+    if (!req.user.id) {
       return res.status(403).json({
         succes: false,
         message: "User need to authenticated first to change password.",
@@ -263,8 +248,7 @@ exports.changePassword = async (req, res) => {
     }
 
     // get the user details from datbase
-    const user = await User.findById(req.user._id);
-    // TODO: try without this line, use only req.user
+    const user = await User.findOne({ _id: req.user.id, isDeleted: false });
 
     // compare oldPassword with database
     if (!(await bcrypt.compare(oldPassword, user.password))) {
@@ -274,14 +258,6 @@ exports.changePassword = async (req, res) => {
       });
     }
 
-    // check weather both the passwords are same or not
-    if (newPassword !== confirmPassword) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "The passwords provided do not match. Please ensure both passwords are the same.",
-      });
-    }
     // update the password in database
     user.password = await bcrypt.hash(newPassword, 8);
 

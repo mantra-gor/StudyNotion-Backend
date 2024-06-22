@@ -2,6 +2,7 @@ const User = require("../models/User.model.js");
 const mailSender = require("../utils/mailSender.utils.js");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
+const { frontendBaseUrl } = require("../config/config.js");
 
 // reset password token
 exports.resetPasswordToken = async (req, res) => {
@@ -42,7 +43,7 @@ exports.resetPasswordToken = async (req, res) => {
     );
 
     // create url
-    const url = `https://localhost:3000/forgot-password/${token}`;
+    const url = `${frontendBaseUrl}/forgot-password/${token}`;
 
     // send mail containing the url and return response
     const title = "Reset Your StudyNotion Password";

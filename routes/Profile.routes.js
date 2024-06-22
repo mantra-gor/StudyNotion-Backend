@@ -4,7 +4,7 @@ const router = Router();
 
 // import profile controllers
 const {
-  deleteAccount,
+  deleteAccountRequest,
   updateProfile,
 } = require("../controllers/Profile.controller.js");
 
@@ -19,6 +19,6 @@ const { auth } = require("../middlewares/Auth.middleware.js");
 router.put("/update-profile", auth, updateProfile);
 
 // deleting the account needed the user to be logged in
-router.delete("/delete-account", auth, deleteAccount);
+router.delete("/delete-account", auth, deleteAccountRequest);
 
 module.exports = router;

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { COURSES_STATUSES } = require("../config/constants");
 
 const coursesSchema = new mongoose.Schema(
   {
@@ -64,7 +65,7 @@ const coursesSchema = new mongoose.Schema(
     ],
     status: {
       type: String,
-      enum: ["Draft", "Published"],
+      enum: Object.values(COURSES_STATUSES),
     },
   },
   { timestamps: true }

@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
+const { USER_GENDER } = require("../config/constants");
 
 const profileSchema = new mongoose.Schema(
   {
     gender: {
       type: String,
-      enum: ["Male", "Female", "Other", null],
+      enum: Object.values(USER_GENDER),
     },
     dob: {
       type: String,
