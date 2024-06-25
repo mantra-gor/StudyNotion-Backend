@@ -164,14 +164,6 @@ exports.login = async (req, res) => {
     // fetch the data from value
     const { email, password } = value;
 
-    // validate the data
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
-    }
-
     // check does user exist or not
     const user = await User.findOne({ email }).populate("additionalDetails");
     if (!user) {
@@ -187,6 +179,7 @@ exports.login = async (req, res) => {
         email: user.email,
         id: user._id,
         accountType: user.accountType,
+        isDeleted: user.isDeleted,
       };
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "2h",
