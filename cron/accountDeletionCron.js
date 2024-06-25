@@ -4,27 +4,54 @@ const Cronjob = require("../models/Cronjob.model.js");
 const { CRONJOB_STATUSES, CRONJOB_TYPES } = require("../config/constants.js");
 
 exports.accountDeletionCron = async (userId) => {
-  const currentDate = new Date();
-  currentDate.setDate(currentDate.getDate() + 4);
+  try {
+    const currentDate = new Date();
+    currentDate.setDate(currentDate.getDate() + 4);
 
-  const month = currentDate.getMonth();
-  const day = currentDate.getDate();
-  const hour = currentDate.getHours();
-  const minute = currentDate.getMinutes();
-  const second = currentDate.getSeconds();
+    const month = currentDate.getMonth();
+    const day = currentDate.getDate();
+    const hour = currentDate.getHours();
+    const minute = currentDate.getMinutes();
+    const second = currentDate.getSeconds();
 
-  const cronExpression = `${second} ${minute} ${hour} ${day} ${month + 1} *`;
+    const cronExpression = `${second} ${minute} ${hour} ${day} ${month + 1} *`;
 
-  const job = cron.schedule(cronExpression, () => {
-    accountDeletion(userId);
-  });
+    const taskName = `${CRONJOB_TYPES.DELETION}_${userId}_${Date.now()}`;
+    const task = cron.schedule(
+      cronExpression,
+      () => {
+        accountDeletion(userId);
+      },
+      {
+        scheduled: true,
+        name: taskName,
+      }
+    );
 
-  await Cronjob.create({
-    userId: userId,
-    jobType: CRONJOB_TYPES.DELETION,
-    job: job,
-    status: CRONJOB_STATUSES.PENDING,
-  });
+    console.log("JOB:", task);
+
+    await Cronjob.create({
+      userId: userId,
+      taskName: taskName,
+      jobType: CRONJOB_TYPES.DELETION,
+      status: CRONJOB_STATUSES.PENDING,
+    });
+
+    const taskFromDb = await Cronjob.findOne({
+      userId: userId,
+      jobType: CRONJOB_TYPES.DELETION,
+    });
+
+    const myTask = cron.getTasks(taskFromDb.id);
+    console.log("TASKS: ", tasks);
+  } catch (error) {
+    console.log("In side cron job:", error);
+  }
+};
+
+exports.getAllTasks = async () => {
+  const tasks = cron.getTasks();
+  console.log("TASKS: ", tasks);
 };
 
 exports.cancelAccountDeletinoCron = async (userId) => {
@@ -32,9 +59,10 @@ exports.cancelAccountDeletinoCron = async (userId) => {
     userId: userId,
     jobType: CRONJOB_TYPES.DELETION,
   });
+  console.log(cronJob);
   if (cronJob) {
     cronJob.job.destroy();
-    await Cronjob.findByIdAndUpdate(cronJob._id, {
+    return await Cronjob.findByIdAndUpdate(cronJob._id, {
       status: CRONJOB_STATUSES.CANCELLED,
     });
   }

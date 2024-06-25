@@ -3,20 +3,23 @@ const mailSender = require("../utils/mailSender.utils.js");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const { frontendBaseUrl } = require("../config/config.js");
+const { emailSchema } = require("../validations/General.validation.js");
+const JoiErrorHandler = require("../utils/errorHandler.utils.js");
+const {
+  resetPasswordSchema,
+} = require("../validations/ResetPassword.validation.js");
 
 // reset password token
 exports.resetPasswordToken = async (req, res) => {
   try {
-    // get the data from req body
-    const { email } = req.body;
-
-    // validate email
-    if (!email) {
-      return res(400).json({
-        success: false,
-        message: "Email is required to reset your password",
-      });
+    // validate email using Joi
+    const { error, value } = emailSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
     }
+
+    // get the data from req body
+    const { email } = value;
 
     // find the user from db
     const user = await User.findOne({ email });
@@ -78,28 +81,13 @@ exports.resetPasswordToken = async (req, res) => {
 // reset password
 exports.resetPassword = async (req, res) => {
   try {
-    // fetching the data from req body
-    const { token, password, confirmPassword } = req.body;
+    const { error, value } = resetPasswordSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
+    }
 
-    // validating the data
-    if (!token) {
-      return res.status(400).json({
-        success: false,
-        message: "Token is not available",
-      });
-    }
-    if (!password || !confirmPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "Password and confirm password are required fields",
-      });
-    }
-    if (password !== confirmPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "Password and confirm password are not matching",
-      });
-    }
+    // fetching the data from req body
+    const { token, password } = value;
 
     // verifying the token from db
     const user = await User.findOne({ token });

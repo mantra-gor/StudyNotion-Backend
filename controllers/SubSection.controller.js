@@ -1,35 +1,35 @@
 const SubSection = require("../models/SubSection.model.js");
 const Section = require("../models/Section.model.js");
 const { fileUploader, deleteFile } = require("../utils/fileUploader.utils.js");
+const JoiErrorHandler = require("../utils/errorHandler.utils.js");
+const {
+  courseIdSchema,
+  videoFileSchema,
+} = require("../validations/General.validation.js");
+const {
+  createSubSectionSchema,
+  updateSubSectionSchema,
+} = require("../validations/SubSection.validation.js");
 require("dotenv").config();
 
 // create subsection
 exports.createSubSection = async (req, res) => {
   try {
+    // validate the data using Joi
+    const { error, value } = createSubSectionSchema.validate(req.body);
+    const videoFile = videoFileSchema.validate(req.files.video);
+    if (error || videoFile.error) {
+      return res.status(400).json(JoiErrorHandler(error || videoFile.error));
+    }
+
     // getting the data
-    const { sectionID, title, description, duration } = req.body;
-    const videoFile = req.files.video;
-
-    // validating the data
-    const requiredFields = ["sectionID", "title", "description", "duration"];
-
-    for (const field of requiredFields) {
-      if (!req.body[field]) {
-        return res.status(400).json({
-          success: false,
-          message: `${field} is required`,
-        });
-      }
-    }
-    if (!videoFile) {
-      return res.status(400).json({
-        success: false,
-        message: `Video file is required`,
-      });
-    }
+    const { sectionID, title, description, duration } = value;
 
     // uploading the video to cloudinary
-    const videoDetails = await fileUploader(videoFile, process.env.FOLDER_NAME);
+    const videoDetails = await fileUploader(
+      videoFile.value,
+      process.env.FOLDER_NAME
+    );
 
     // create entry in db
     const newSubSection = await SubSection.create({
@@ -68,16 +68,15 @@ exports.createSubSection = async (req, res) => {
 // update subsection
 exports.updateSubSection = async (req, res) => {
   try {
-    // get data
-    const { subSectionID, title, description, video, duration } = req.body;
-
-    // validate data
-    if (!subSectionID) {
-      return res.status(400).json({
-        success: false,
-        message: "Subsection ID is required",
-      });
+    const { error, value } = updateSubSectionSchema.validate(req.body);
+    const videoFile = videoFileSchema(req.files.video);
+    if (error || videoFile.error) {
+      return res.status(400).json(JoiErrorHandler(error));
     }
+
+    // get data
+    const { subSectionID, title, description, duration } = value;
+    const video = videoFile.value;
 
     // getting all details what user want to update
     const updatedDetails = {};
@@ -109,6 +108,8 @@ exports.updateSubSection = async (req, res) => {
         process.env.FOLDER_NAME
       );
 
+      // TODO: after updating the video ensure to delete the old video from cloud
+
       // add new video url to updateDetails object
       updatedDetails.videoUrl = newVideoDetails.secure_url;
     }
@@ -138,8 +139,12 @@ exports.updateSubSection = async (req, res) => {
 // delete subsection
 exports.deleteSubSection = async (req, res) => {
   try {
+    const { error, value } = courseIdSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
+    }
     // get data
-    const { subSectionID } = req.body;
+    const { subSectionID } = value;
 
     // validate data
     if (!subSectionID) {

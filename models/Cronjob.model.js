@@ -8,13 +8,13 @@ const CronjobSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    taskName: {
+      type: String,
+      required: true,
+    },
     jobType: {
       type: String,
       enum: Object.values(CRONJOB_TYPES),
-      required: true,
-    },
-    job: {
-      type: mongoose.Schema.Types.Mixed,
       required: true,
     },
     status: {

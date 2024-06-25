@@ -5,7 +5,10 @@ const { fileUploader } = require("../utils/fileUploader.utils.js");
 const { USER_ROLES } = require("../config/constants.js");
 const { createCourseSchema } = require("../validations/Course.validations.js");
 const JoiErrorHandler = require("../utils/errorHandler.utils.js");
-const { thumbnailSchema } = require("../validations/General.validation.js");
+const {
+  thumbnailSchema,
+  courseIdSchema,
+} = require("../validations/General.validation.js");
 
 require("dotenv").config();
 
@@ -107,7 +110,7 @@ exports.createCourse = async (req, res) => {
 };
 
 // show all courses handler function
-exports.showAllCourses = async (req, res) => {
+exports.showAllCourses = async (_, res) => {
   try {
     const allCourses = await Course.find(
       {},
@@ -137,16 +140,14 @@ exports.showAllCourses = async (req, res) => {
 // get all details of course
 exports.getCourseDetails = async (req, res) => {
   try {
-    // fetch data
-    const { courseID } = req.body;
-
-    // validate the data
-    if (!courseID) {
-      return res.status(400).json({
-        success: false,
-        message: "Course ID is required",
-      });
+    // get the data validated using Joi
+    const { error, value } = courseIdSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
     }
+
+    // fetch data
+    const { courseID } = value;
 
     // getting and validating the data from db
     const courseDetails = await Course.findById(courseID)

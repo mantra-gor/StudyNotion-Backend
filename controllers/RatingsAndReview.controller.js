@@ -1,35 +1,24 @@
 const RatingsAndReview = require("../models/RatingsAndReviews.model.js");
 const Course = require("../models/Courses.model.js");
 const { USER_ROLES } = require("../config/constants.js");
+const JoiErrorHandler = require("../utils/errorHandler.utils.js");
+const {
+  createRatingAndReviewSchema,
+} = require("../validations/RatingAndReview.validation.js");
+const { courseIdSchema } = require("../validations/General.validation.js");
 
 // create rating
 exports.createRatingAndReview = async (req, res) => {
   try {
-    // fetch data
-    const { courseID, rating, review } = req.body;
-    const { userID } = req.user;
+    // Validate data using Joi
+    const { error, value } = createRatingAndReviewSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
+    }
 
-    // validate the data
-    if (!(courseID & rating & review & userID)) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
-    }
-    // only students can rate and review courses
-    if (req.user.accountType !== USER_ROLES.STUDENT) {
-      return res.status(403).json({
-        success: false,
-        message: "Only students are allowed to rate and review the courses",
-      });
-    }
-    // rating should be only between 0 to 5
-    if (rating > 5 || rating < 0) {
-      return res.status(422).json({
-        success: false,
-        message: "Invalid rating. Please provide a rating between 0 and 5.",
-      });
-    }
+    // fetch data
+    const { courseID, rating, review } = value;
+    const { userID } = req.user.id;
 
     const course = await Course.findById(courseID);
     if (!course) {
@@ -107,16 +96,14 @@ exports.createRatingAndReview = async (req, res) => {
 // average rating
 exports.getAverageRating = async (req, res) => {
   try {
-    // get the data
-    const { courseID } = req.body;
-
-    // validate data
-    if (!courseID) {
-      return res.status(400).json({
-        success: false,
-        message: "Course ID is required",
-      });
+    // validate the data using Joi
+    const { error, value } = courseIdSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
     }
+
+    // get the data
+    const { courseID } = value;
 
     // get the average of rating
     const course = await Course.findById(courseID).populate(
@@ -168,16 +155,14 @@ exports.getAverageRating = async (req, res) => {
 // get all rating and reviews based on course
 exports.getRatingsAndReviews = async (req, res) => {
   try {
-    // get the data
-    const { courseID } = req.body;
-
-    // validate the data
-    if (!courseID) {
-      return res.status(400).json({
-        success: false,
-        message: "Course ID is required",
-      });
+    // validate the data using Joi
+    const { error, value } = courseIdSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
     }
+
+    // get the data
+    const { courseID } = value;
 
     // get data from database
     const course = await Course.findById(courseID).populate(

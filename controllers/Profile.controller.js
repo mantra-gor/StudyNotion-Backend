@@ -2,27 +2,27 @@ const moment = require("moment");
 const Course = require("../models/Courses.model.js");
 const Profile = require("../models/Profile.model.js");
 const User = require("../models/User.model.js");
-const { accountDeletionCron } = require("../cron/accountDeletionCron.js");
+const {
+  accountDeletionCron,
+  cancelAccountDeletinoCron,
+  getAllTasks,
+} = require("../cron/accountDeletionCron.js");
+const JoiErrorHandler = require("../utils/errorHandler.utils.js");
+const {
+  updateProfileSchema,
+} = require("../validations/Profile.validations.js");
 
 exports.updateProfile = async (req, res) => {
   try {
-    // get the data
-    const { gender, dob, about, phoneNo } = req.body;
-    const userID = req.user.id;
+    // validate data using Joi
+    const { error, value } = updateProfileSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
+    }
 
-    // validate and user id and phoneNo
-    if (!userID) {
-      return res.status(400).json({
-        success: false,
-        message: "User ID is required field",
-      });
-    }
-    if (!phoneNo) {
-      return res.status(400).json({
-        success: false,
-        message: "Phone number is required field",
-      });
-    }
+    // get the data
+    const { gender, dob, about, phoneNo } = value;
+    const userID = req.user.id;
 
     // get the data which user wants to update
     const updateDetails = {};
@@ -81,11 +81,11 @@ exports.deleteAccountRequest = async (req, res) => {
     }
 
     // mark the flag true for soft deletion of the user and save the updated user
-    user.isDeleted = true;
-    await user.save();
+    // await User.findByIdAndUpdate(userId, { isDeleted: true });
 
     // schedule the cron job for account deletion
     await accountDeletionCron(userId);
+    getAllTasks();
 
     // send the response to the user
     res.status(200).json({
@@ -102,4 +102,48 @@ exports.deleteAccountRequest = async (req, res) => {
   }
 };
 
-// exports.retriveAccountRequest
+exports.retriveAccountRequest = async (req, res) => {
+  try {
+    // get the user id
+    const userId = req.user.id;
+    const userDetails = await User.findById(userId);
+
+    // validate the user from db
+    if (!userDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // now validate is user is doft deleted or not
+    if (!userDetails.isDeleted) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Your account is already active. You are good to go with your courses.",
+      });
+    }
+
+    // now cancel the account deletion request
+    const deletionResponse = await cancelAccountDeletinoCron(userId);
+
+    if (deletionResponse) {
+      userDetails.isDeleted = false;
+      await User.save();
+
+      // return the response to user
+      return res.status(200).json({
+        success: false,
+        message:
+          "Your account is now retrived. You are good to go for your learning.",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while retriving your account.",
+      error: error.message,
+    });
+  }
+};

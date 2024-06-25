@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const { USER_ROLES } = require("../config/constants");
+const { USER_ROLES, USER_GENDER } = require("../config/constants");
 
 const emailSchema = Joi.string().email().lowercase().required();
 const nameSchema = Joi.string().min(3).max(30).required();
@@ -39,16 +39,50 @@ const thumbnailSchema = Joi.object({
     mimetype: Joi.string().valid("image/jpeg", "image/png").required(),
   }).required(),
 });
+const videoFileSchema = Joi.object({
+  name: Joi.string().required(),
+  size: Joi.number()
+    .max(1024 * 1024 * 100)
+    .required(),
+  mimetype: Joi.string()
+    .valid("video/mp4", "video/avi", "video/mov", "video/mkv")
+    .required(),
+})
+  .required()
+  .messages({
+    "any.required": "Video file is required",
+    "string.base": "File name must be a string",
+    "number.base": "File size must be a number",
+    "number.max": "File size must not exceed 50 MB",
+    "string.valid":
+      "Invalid file type, must be one of video/mp4, video/avi, video/mov, video/mkv",
+  });
+
+const genderSchema = Joi.string().valid(...Object.values(USER_GENDER));
+const dobSchema = Joi.date().required();
+const courseIdSchema = Joi.string().required();
+const timeSchema = Joi.string()
+  .pattern(/^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/)
+  .required()
+  .messages({
+    "string.pattern.base": "Duration must be in the format HH:mm or HH:mm:ss",
+    "any.required": "Duration is required",
+  });
 
 module.exports = {
-  emailSchema,
-  nameSchema,
-  passwordsSchema,
-  phoneNumberSchema,
   accountTypeSchema,
   descriptionSchema,
+  phoneNumberSchema,
+  passwordsSchema,
   arrayDataSchema,
   thumbnailSchema,
+  videoFileSchema,
+  courseIdSchema,
+  genderSchema,
+  emailSchema,
   titleSchema,
+  nameSchema,
+  timeSchema,
   otpSchema,
+  dobSchema,
 };

@@ -1,20 +1,17 @@
 const Section = require("../models/Section.model.js");
 const Course = require("../models/Courses.model.js");
+const JoiErrorHandler = require("../utils/errorHandler.utils.js");
+const { crudSectionSchema } = require("../validations/Section.validate.js");
+
 exports.createSection = async (req, res) => {
   try {
-    // data fetch
-    const { sectionName, courseID } = req.body;
-
-    // data validation
-    const requiredFields = ["sectionName", "courseID"];
-    for (const field of requiredFields) {
-      if (!req.body[field]) {
-        return res.status(500).json({
-          success: false,
-          message: `${field} is required`,
-        });
-      }
+    // validate the data using joi
+    const { error, value } = crudSectionSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
     }
+    // data fetch
+    const { sectionName, courseID } = value;
 
     // create section
     const newSection = await Section.create({ sectionName });
@@ -52,16 +49,13 @@ exports.createSection = async (req, res) => {
 
 exports.updateSection = async (req, res) => {
   try {
-    // fetch data
-    const { sectionName, sectionID } = req.body;
-
-    // validate data
-    if (!sectionName || !sectionID) {
-      return res.status(500).json({
-        success: false,
-        message: "All fields are required",
-      });
+    const { error, value } = crudSectionSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
     }
+
+    // fetch data
+    const { sectionName, sectionID } = value;
 
     // update data in db
     const updatedSection = await Section.findByIdAndUpdate(
@@ -90,16 +84,13 @@ exports.updateSection = async (req, res) => {
 // delete section
 exports.deleteSection = async (req, res) => {
   try {
-    // get the data
-    const { sectionID, courseID } = req.params;
-
-    // validate the data
-    if (!sectionID) {
-      return res.status(400).json({
-        success: false,
-        message: "Section ID is required",
-      });
+    // validate the data using Joi
+    const { error, value } = crudSectionSchema.validate(req.params);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
     }
+    // get the data
+    const { sectionID, courseID } = value;
 
     // delete the section from db
     const sectionDetails = await Section.findOneAndDelete({ _id: sectionID });
@@ -109,7 +100,7 @@ exports.deleteSection = async (req, res) => {
         message: "Section not found",
       });
     }
-    // TODO[testing]: Do we need to delete Object Id from course schema?
+    // TODO[testing]: Is it needed to delete Object Id from course schema?
 
     // return response
     return res(200).json({
