@@ -10,7 +10,7 @@ const contactUsSchema = Joi.object({
   firstName: nameSchema,
   lastName: nameSchema,
   email: emailSchema,
-  phoneNumber: phoneNumberSchema,
+  phoneNo: phoneNumberSchema,
   message: descriptionSchema,
 });
 

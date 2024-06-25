@@ -1,8 +1,20 @@
 const User = require("../models/User.model.js");
 const mailSender = require("../utils/mailSender.utils.js");
+const { frontendBaseUrl } = require("../config/config.js");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-const { frontendBaseUrl } = require("../config/config.js");
+const {
+  forgotPasswordEmail,
+} = require("../emails/templates/forgotPassword.email.js");
+const { emailSchema } = require("../validations/General.validation.js");
+const JoiErrorHandler = require("../utils/errorHandler.utils.js");
+const {
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} = require("../validations/ResetPassword.validations.js");
+const {
+  resetPasswordEmail,
+} = require("../emails/templates/resetPassword.email.js");
 const { emailSchema } = require("../validations/General.validation.js");
 const JoiErrorHandler = require("../utils/errorHandler.utils.js");
 const {
@@ -10,15 +22,15 @@ const {
 } = require("../validations/ResetPassword.validation.js");
 
 // reset password token
-exports.resetPasswordToken = async (req, res) => {
+exports.forgotPassword = async (req, res) => {
   try {
-    // validate email using Joi
-    const { error, value } = emailSchema.validate(req.body);
+    // validate the email using Joi
+    const { error, value } = forgotPasswordSchema.validate(req.body);
     if (error) {
       return res.status(400).json(JoiErrorHandler(error));
     }
 
-    // get the data from req body
+    // get the data from value
     const { email } = value;
 
     // find the user from db
@@ -46,27 +58,18 @@ exports.resetPasswordToken = async (req, res) => {
     );
 
     // create url
-    const url = `${frontendBaseUrl}/forgot-password/${token}`;
+    const url = `${projectConfig.frontendBaseUrl}/forgot-password/${token}`;
 
     // send mail containing the url and return response
     const title = "Reset Your StudyNotion Password";
-    const body = `
-    <p>Dear ${user.firstName},</p>
-      <p>We've received a request to reset the password for your StudyNotion account. To complete the password reset process, please follow these steps:</p>
-      <ol>
-          <li>Click on the following link to reset your password: <a href=${url}>Reset Password</a></li>
-          <li>This link is valid for one use only and will expire in 5 minutes. If you don't use the link within this time frame, you'll need to regenerate the password reset link again.</li>
-      </ol>
-      <p>If you did not request a password reset or no longer wish to reset your password, you can safely ignore this email.</p>
-      <p>Thank you for choosing StudyNotion.</p>
-      <p>Best regards,<br>The StudyNotion Team</p>
-    `;
+    const name = user.firstName + " " + user.lastName;
+    const body = forgotPasswordEmail(name, url);
     await mailSender(email, title, body);
 
     return res.status(200).json({
       success: true,
       message:
-        "An email send to your email. Please proceed as the instructions provided in your mail.",
+        "An email send to your email address. Please proceed as the instructions provided in your mail.",
     });
   } catch (error) {
     return res.status(500).json({
@@ -81,6 +84,7 @@ exports.resetPasswordToken = async (req, res) => {
 // reset password
 exports.resetPassword = async (req, res) => {
   try {
+    // validate the data using Joi
     const { error, value } = resetPasswordSchema.validate(req.body);
     if (error) {
       return res.status(400).json(JoiErrorHandler(error));
@@ -99,7 +103,7 @@ exports.resetPassword = async (req, res) => {
       });
     }
 
-    // verify is token is expired of not
+    // verify is token is expired or not
     if (user.resetPasswordExipres < Date.now()) {
       return res.status(400).json({
         success: false,
@@ -119,16 +123,10 @@ exports.resetPassword = async (req, res) => {
       { new: true }
     );
 
-    // sending mail and response to the user
+    // sending mail to the user
     const title = "Your password is updated successfully";
-    const body = `
-        <p>Dear ${user.firstName},</p>
-        <p>Your password for the StudyNotion account associated with this email address has been successfully reset.</p>
-        <p>If you did not initiate this password reset or believe your account has been compromised, please contact us immediately.</p>
-        <p>Thank you for using StudyNotion.</p>
-        <p>Best regards,<br>The StudyNotion Team</p>
-    `;
-
+    const name = user.firstName + " " + user.lastName;
+    const body = resetPasswordEmail(name);
     await mailSender(user.email, title, body);
 
     return res.status(200).json({

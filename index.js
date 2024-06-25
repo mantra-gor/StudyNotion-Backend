@@ -32,10 +32,12 @@ cloudinaryConnect();
 // defining routes
 const userRoutes = require("./routes/User.routes.js");
 const profileRoutes = require("./routes/Profile.routes.js");
+const generalRoutes = require("./routes/General.routes.js");
 // const paymentRoutes = require("./routes/Payment.routes.js");
 const courseRoutes = require("./routes/Course.routes.js");
 // const defaultRoutes = require("./routes/Default.routes.js");
 
+app.use("/api/v1", generalRoutes);
 app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/course", courseRoutes);
@@ -52,3 +54,17 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log("\nServer started successfully! at PORT: ", port);
 });
+
+// sending mails for testing mails
+const mailSender = require("./utils/mailSender.utils.js");
+const {
+  updatePassword,
+} = require("./emails/templates/passwordUpdated.email.js");
+
+async function testMails() {
+  const title = "Your password is changed successfully";
+  const email = "mantragor77@gmail.com";
+  const body = updatePassword(email, "Mantra");
+  await mailSender(email, title, body);
+}
+// testMails();

@@ -1,8 +1,13 @@
 const mailSender = require("../utils/mailSender.utils");
 const Cronjob = require("../models/Cronjob.model.js");
 const { CRONJOB_STATUSES } = require("../config/constants.js");
+const {
+  successfullAccountDeletion,
+  unsuccessfullAccountDeletion,
+} = require("../emails/templates/accountDeletion.email.js");
 
 exports.deleteAccount = async (userID) => {
+  let userDetails;
   try {
     // validate id
     if (!userID) {
@@ -13,7 +18,7 @@ exports.deleteAccount = async (userID) => {
     }
 
     // delete user
-    const userDetails = await User.findByIdAndDelete(userID);
+    userDetails = await User.findByIdAndDelete(userID);
     if (!userDetails) {
       return res.status(404).json({
         success: false,
@@ -38,14 +43,8 @@ exports.deleteAccount = async (userID) => {
 
     // notify the user using mail that your account has been deleted successfully
     const title = "Account Deletion Notification";
-    const body = `
-      <p>Dear ${userDetails.lastName},</p>
-      <p>This is to inform you that your account has been permanently deleted from our system. 
-      If you have any questions or need further assistance, please don't hesitate to reach out to us.</p>
-      <p>Thank you for using our service.</p>
-      <p>Best regards,<br>The StudyNotion Team</p>
-    `;
-
+    const name = userDetails.firstName + " " + userDetails.lastname;
+    const body = successfullAccountDeletion(name);
     await mailSender(userDetails.email, title, body);
 
     // making the cronjob status executed
@@ -62,12 +61,8 @@ exports.deleteAccount = async (userID) => {
   } catch (error) {
     // notify the use using mail that your account cannot be deteled please try again.
     const title = "Account Deletion Failed";
-    const body = `
-      <p>Dear ${userDetails.lastName},</p>
-      <p>This is to inform you that your account deletion request has been failed. Please try again later after sometime.</p>
-      <p>Thank you for using our service.</p>
-      <p>Best regards,<br>The StudyNotion Team</p>
-    `;
+    const name = userDetails.firstName + " " + userDetails.lastname;
+    const body = unsuccessfullAccountDeletion(name);
     await mailSender(userDetails.email, title, body);
 
     // making the cronjob status failed

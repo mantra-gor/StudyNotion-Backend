@@ -12,7 +12,7 @@ const {
 
 // import reset password controllers
 const {
-  resetPasswordToken,
+  forgotPassword,
   resetPassword,
 } = require("../controllers/ResetPassword.controller.js");
 
@@ -40,12 +40,15 @@ router.post("/sendotp", sendOTP);
 // Password should only be changed by the user itself
 router.post("/change-password", auth, changePassword);
 
+// When access token is expired and regenerating token using refresh token
+router.post("/refresh-token");
+
 // ********************************************************************************************************
 //?                                             RESET PASSWORD
 // ********************************************************************************************************
 
 // To reset password, token is sent to user's email
-router.post("/forget-password", resetPasswordToken);
+router.post("/forgot-password", forgotPassword);
 
 // To reset user's password after verification
 router.post("/reset-password", resetPassword);

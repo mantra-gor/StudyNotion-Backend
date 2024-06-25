@@ -15,12 +15,11 @@ exports.auth = async (req, res, next) => {
     try {
       const payloadData = jwt.verify(token, process.env.JWT_SECRET);
       req.user = payloadData;
-      console.log(req.user);
     } catch (error) {
       console.error(error, "JWT_ERROR");
-      return res.status(400).json({
+      return res.status(401).json({
         success: false,
-        message: "Token can not be verified",
+        message: "Token can not be verified, token maybe expired.",
         error: error.message,
       });
     }

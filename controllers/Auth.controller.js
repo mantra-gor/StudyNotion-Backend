@@ -13,6 +13,9 @@ const {
   loginSchema,
   changePasswordSchema,
 } = require("../validations/Auth.validations.js");
+const {
+  updatePasswordEmail,
+} = require("../emails/templates/passwordUpdated.email.js");
 require("dotenv").config();
 
 // send otp
@@ -230,7 +233,7 @@ exports.changePassword = async (req, res) => {
     }
 
     // get old password, new password, confirm password from value
-    const { oldPassword, newPassword, confirmPassword } = value;
+    const { oldPassword, newPassword } = value;
 
     // check is user authenticated or not
     if (!req.user.id) {
@@ -259,12 +262,8 @@ exports.changePassword = async (req, res) => {
 
     // send mail of password update
     const title = "Your password is changed successfully";
-    const body = `
-      <p>Hello ${user.firstName},</p>
-      <p>This is to inform you that your password has been successfully updated. If you did not initiate this change, please contact our support team immediately.</p>
-      <p>Thank you.</p>
-      <p>StudyNotion</p>
-    `;
+    const name = user.firstName + " " + user.lastName;
+    const body = updatePasswordEmail(user.email, name);
     await mailSender(user.email, title, body);
 
     // return res
