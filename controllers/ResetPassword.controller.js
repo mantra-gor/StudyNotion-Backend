@@ -6,7 +6,6 @@ const crypto = require("crypto");
 const {
   forgotPasswordEmail,
 } = require("../emails/templates/forgotPassword.email.js");
-const { emailSchema } = require("../validations/General.validation.js");
 const JoiErrorHandler = require("../utils/errorHandler.utils.js");
 const {
   forgotPasswordSchema,
@@ -15,11 +14,6 @@ const {
 const {
   resetPasswordEmail,
 } = require("../emails/templates/resetPassword.email.js");
-const { emailSchema } = require("../validations/General.validation.js");
-const JoiErrorHandler = require("../utils/errorHandler.utils.js");
-const {
-  resetPasswordSchema,
-} = require("../validations/ResetPassword.validation.js");
 
 // reset password token
 exports.forgotPassword = async (req, res) => {
@@ -58,7 +52,7 @@ exports.forgotPassword = async (req, res) => {
     );
 
     // create url
-    const url = `${projectConfig.frontendBaseUrl}/forgot-password/${token}`;
+    const url = `${frontendBaseUrl}/forgot-password/${token}`;
 
     // send mail containing the url and return response
     const title = "Reset Your StudyNotion Password";
