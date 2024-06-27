@@ -52,7 +52,7 @@ exports.forgotPassword = async (req, res) => {
     );
 
     // create url
-    const url = `${frontendBaseUrl}/forgot-password/${token}`;
+    const url = `${frontendBaseUrl}/reset-password/${token}`;
 
     // send mail containing the url and return response
     const title = "Reset Your StudyNotion Password";
