@@ -38,11 +38,13 @@ exports.sendOTP = async (req, res) => {
     }
 
     // generate otp
-    var otp = otpGenerator.generate(6, {
-      upperCaseAlphabets: false,
-      lowerCaseAlphabets: false,
-      specialChars: false,
-    });
+    var otp = Number(
+      otpGenerator.generate(6, {
+        upperCaseAlphabets: false,
+        lowerCaseAlphabets: false,
+        specialChars: false,
+      })
+    );
 
     // check is otp is unique or not
     const result = await OTP.findOne({ otp });
@@ -114,7 +116,6 @@ exports.signup = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Invalid OTP",
-        data: recentOTP,
       });
     }
 
