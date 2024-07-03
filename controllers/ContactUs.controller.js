@@ -16,13 +16,14 @@ exports.contactUs = async (req, res) => {
     }
 
     // get the data
-    const { firstName, lastName, email, phoneNo, message } = value;
+    const { firstName, lastName, email, countryCode, phoneNo, message } = value;
 
     // store the response to database
     const newInquiry = await ContactUsRecords.create({
       firstName,
       lastName,
       email,
+      countryCode,
       phoneNo,
       message,
     });
@@ -35,7 +36,7 @@ exports.contactUs = async (req, res) => {
         email,
         firstName,
         lastName,
-        phoneNo,
+        countryCode + " " + phoneNo,
         message,
         newInquiry
       );

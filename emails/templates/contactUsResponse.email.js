@@ -22,7 +22,7 @@ exports.contactUsResponse = (name) => {
           <p>Dear ${name},</p>
           <p>Thank you for contacting StudyNotion. Your message is important to us, and we appreciate the time you took to reach out.</p>
           <p>We have received your message and will get back to you shortly. Our team is dedicated to providing you with the best possible service, and we are working hard to address your inquiry as quickly as possible.</p>
-          <p>If you have any urgent questions or concerns, please feel free to contact us directly at <a href="mailto:contact@studynotion.com">contact@studynotion.com</a>.</p>
+          <p>If you have any urgent questions or concerns, please feel free to contact us directly at <a href="mailto:help.studynotion.edu@gmail.com">help.studynotion.edu@gmail.com</a>.</p>
           <p>We look forward to assisting you.</p>
           <p>Best regards,<br> The StudyNotion Team</p>
           <br><br>

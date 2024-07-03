@@ -4,12 +4,14 @@ const {
   emailSchema,
   phoneNumberSchema,
   descriptionSchema,
+  countryCode,
 } = require("./General.validation");
 
 const contactUsSchema = Joi.object({
   firstName: nameSchema,
   lastName: nameSchema,
   email: emailSchema,
+  countryCode: countryCode,
   phoneNo: phoneNumberSchema,
   message: descriptionSchema,
 });

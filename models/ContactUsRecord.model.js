@@ -18,13 +18,16 @@ const contactUsRecordSchema = new mongoose.Schema(
       trim: true,
       match: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, // Basic email validation
     },
+    countryCode: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     phoneNo: {
       type: String,
       required: true,
       trim: true,
-      match: /^\+[0-9]{7,15}$/, // Allow phone numbers starting with '+' and 7 to 15 digits
     },
-
     message: {
       type: String,
       required: true,

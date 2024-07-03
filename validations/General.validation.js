@@ -19,7 +19,7 @@ const passwordsSchema = Joi.object({
     })
     .required(),
 });
-
+const countryCode = Joi.string().required().regex(/^\+/);
 const phoneNumberSchema = Joi.string()
   .required()
   .regex(/^[+]?[(]?[0-9]{3}[)]?[-s.]?[0-9]{3}[-s.]?[0-9]{4,6}$/);
@@ -79,6 +79,7 @@ module.exports = {
   videoFileSchema,
   courseIdSchema,
   genderSchema,
+  countryCode,
   emailSchema,
   titleSchema,
   nameSchema,
