@@ -8,7 +8,7 @@ const profileSchema = new mongoose.Schema(
       enum: Object.values(USER_GENDER),
     },
     dob: {
-      type: String,
+      type: Date,
     },
     about: {
       type: String,
