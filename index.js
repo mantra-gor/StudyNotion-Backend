@@ -1,7 +1,7 @@
 // import required files and packages
 const express = require("express");
+const rateLimit = require("express-rate-limit");
 require("dotenv").config();
-
 const database = require("./config/database.config.js");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
@@ -15,15 +15,33 @@ const app = express();
 // connect to database
 database.connect();
 
-// adding middlewares
-app.use(express.json());
-app.use(cookieParser());
+// enable CORS
 app.use(
   cors({
     origin: "*",
     credentials: true,
   })
 );
+
+//define rete limit
+const limiter = rateLimit({
+  windowMs: 2 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message:
+      "Too many requests from this IP, please try again after few minutes",
+  },
+});
+
+// apply rate limiter to app
+app.use(limiter);
+
+// adding middlewares
+app.use(express.json());
+app.use(cookieParser());
 app.use(fileUpload({ useTempFiles: true, tempFileDir: "/tmp/" }));
 
 // connect to cloudinary

@@ -7,8 +7,13 @@ const forgotPasswordSchema = Joi.object({
 
 const resetPasswordSchema = Joi.object({
   token: Joi.string().required(),
-  password: passwordsSchema.extract("password"),
-  confirmPassword: passwordsSchema.extract("confirmPassword"),
+  password: passwordsSchema.extract("password").label("password"),
+  confirmPassword: Joi.string()
+    .valid(Joi.ref("password"))
+    .messages({
+      "any.only": "Passwords do not match",
+    })
+    .required(),
 });
 
 module.exports = {

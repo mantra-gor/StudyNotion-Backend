@@ -38,7 +38,7 @@ router.post("/login", login);
 router.post("/sendotp", sendOTP);
 
 // Password should only be changed by the user itself
-router.post("/change-password", auth, changePassword);
+router.put("/change-password", auth, changePassword);
 
 // When access token is expired and regenerating token using refresh token
 router.post("/refresh-token");

@@ -7,6 +7,7 @@ const {
   deleteAccountRequest,
   updateProfile,
   retriveAccountRequest,
+  getEnrolledCourses,
 } = require("../controllers/Profile.controller.js");
 
 // importing middlewares
@@ -24,5 +25,8 @@ router.delete("/delete-account", auth, deleteAccountRequest);
 
 // retriving the soft deleted account
 router.put("/retrive-account", isDeleted, retriveAccountRequest);
+
+// get all the courses user have enrolled
+router.get("/get-enrolled-courses", auth, getEnrolledCourses);
 
 module.exports = router;

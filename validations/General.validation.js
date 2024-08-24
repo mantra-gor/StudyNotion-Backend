@@ -12,13 +12,8 @@ const passwordsSchema = Joi.object({
       "Password must be at least 8 characters long and contain at least one digit, one lowercase letter, one uppercase letter, and one special character."
     )
     .required(),
-  confirmPassword: Joi.string()
-    .valid(Joi.ref("password"))
-    .messages({
-      "any.only": "Passwords do not match",
-    })
-    .required(),
 });
+
 const countryCode = Joi.string().required().regex(/^\+/);
 const phoneNumberSchema = Joi.string()
   .required()

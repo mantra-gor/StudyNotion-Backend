@@ -147,3 +147,28 @@ exports.retriveAccountRequest = async (req, res) => {
     });
   }
 };
+
+exports.getEnrolledCourses = async (req, res) => {
+  try {
+    const userID = req.user.id;
+    const userDetails = await User.findById(userID).populate("courses");
+
+    if (!userDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "User details not found",
+      });
+    }
+    return res.status(200).json({
+      success: false,
+      message: "Courses retrived successfully.",
+      data: userDetails.courses,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while getting courses list.",
+      error: error.message,
+    });
+  }
+};
