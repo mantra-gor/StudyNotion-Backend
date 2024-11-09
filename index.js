@@ -40,6 +40,7 @@ app.use(limiter);
 
 // adding middlewares
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(fileUpload({ useTempFiles: true, tempFileDir: "/tmp/" }));
 
@@ -72,7 +73,7 @@ app.listen(port, () => {
   console.log("\nServer started successfully! at PORT: ", port);
 });
 
-// sending mails for testing mails
+//! (TESTING ONLY  --  REMOVE IN PRODUCTION) sending mails for testing mails
 const mailSender = require("./utils/mailSender.utils.js");
 const {
   updatePassword,
