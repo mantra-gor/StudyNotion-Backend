@@ -25,8 +25,16 @@ exports.createCourse = async (req, res) => {
     }
 
     // fetch the data
-    const { title, description, price, language, keyFeatures, category, tags } =
-      value;
+    const {
+      title,
+      description,
+      price,
+      language,
+      keyFeatures,
+      category,
+      tags,
+      status,
+    } = value;
 
     const thumbnail = req.files.courseThumbnail;
 
@@ -70,6 +78,7 @@ exports.createCourse = async (req, res) => {
       keyFeatures,
       category,
       tags,
+      status,
       thumbnail: thumbnailDetails.secure_url,
       instructor: instructorDetails._id,
     });

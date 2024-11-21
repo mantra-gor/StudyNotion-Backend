@@ -1,5 +1,9 @@
 const Joi = require("joi");
-const { USER_ROLES, USER_GENDER } = require("../config/constants");
+const {
+  USER_ROLES,
+  USER_GENDER,
+  COURSES_STATUSES,
+} = require("../config/constants");
 
 const emailSchema = Joi.string().email().lowercase().required();
 const nameSchema = Joi.string().min(3).max(30).required();
@@ -22,17 +26,23 @@ const otpSchema = Joi.number().min(10000).max(999999).required();
 const accountTypeSchema = Joi.string()
   .valid(...Object.values(USER_ROLES))
   .required();
+const statusSchema = Joi.string()
+  .valid(...Object.values(COURSES_STATUSES))
+  .required();
 const descriptionSchema = Joi.string().min(6).max(400).required();
 const titleSchema = Joi.string().min(6).max(200).required();
 const arrayDataSchema = Joi.array().items(Joi.string()).required();
 const thumbnailSchema = Joi.object({
   thumbnail: Joi.object({
     name: Joi.string()
-      .regex(/^[a-zA-Z0-9]+$/)
+      .regex(/^[a-zA-Z0-9][a-zA-Z0-9_\-]*(\.[a-zA-Z0-9]+)?$/)
       .required(),
     size: Joi.number().required(),
+    data: Joi.binary(),
     mimetype: Joi.string().valid("image/jpeg", "image/png").required(),
-  }).required(),
+  })
+    .unknown()
+    .required(),
 });
 const videoFileSchema = Joi.object({
   name: Joi.string().required(),
@@ -73,6 +83,7 @@ module.exports = {
   thumbnailSchema,
   videoFileSchema,
   courseIdSchema,
+  statusSchema,
   genderSchema,
   countryCode,
   emailSchema,

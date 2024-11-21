@@ -3,6 +3,7 @@ const {
   titleSchema,
   descriptionSchema,
   arrayDataSchema,
+  statusSchema,
 } = require("./General.validation");
 
 const createCourseSchema = Joi.object({
@@ -10,9 +11,10 @@ const createCourseSchema = Joi.object({
   description: descriptionSchema,
   price: Joi.number().required(),
   language: Joi.string().required(),
-  keyFeatures: Joi.array().items(Joi.string()).required(),
+  keyFeatures: arrayDataSchema,
   category: Joi.string().required(),
   tags: arrayDataSchema,
+  status: statusSchema,
 });
 
 module.exports = {
