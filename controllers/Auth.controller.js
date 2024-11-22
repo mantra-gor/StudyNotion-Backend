@@ -281,7 +281,6 @@ exports.changePassword = async (req, res) => {
 exports.tokenRefresh = async (req, res) => {
   try {
     const refreshToken = req.body.token;
-
     if (!refreshToken) {
       return res.status(404).json({
         success: false,
@@ -293,12 +292,8 @@ exports.tokenRefresh = async (req, res) => {
       refreshToken,
       process.env.JWT_REFRESH_TOKEN_SECRET
     );
-
-    console.log("payload", payloadData);
-
     const userId = payloadData.id;
     const user = await User.findById({ _id: userId });
-    console.log("user", user);
 
     // validate the user
     if (!user) {
@@ -318,8 +313,6 @@ exports.tokenRefresh = async (req, res) => {
 
     // now generate a new access token and send it to user
     const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
-
-    console.log(newRefreshToken);
 
     // send these to user
     return res.status(200).json({
