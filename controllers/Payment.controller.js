@@ -9,10 +9,10 @@ exports.capturePayment = async (req, res) => {
   try {
     // get course id and user id
     const { courseID } = req.body;
-    const { userID } = req.user;
+    const { userId } = req.user;
 
     // validate course id and user id
-    if (!(courseID & userID)) {
+    if (!(courseID & userId)) {
       return res.status(400).json({
         success: false,
         message: "Course ID and User ID are required",
@@ -28,7 +28,7 @@ exports.capturePayment = async (req, res) => {
     }
 
     // user already paid for the same course
-    const user = await User.findById(userID);
+    const user = await User.findById(userId);
     const isAlreadyPurchased = user.courses.find(
       (course) => course._id == courseID
     );
@@ -49,7 +49,7 @@ exports.capturePayment = async (req, res) => {
       receipt: Math.random(Date.now()).toString(),
       notes: {
         courseID,
-        userID,
+        userId,
       },
     };
 
@@ -84,7 +84,7 @@ exports.verifySignature = async (req, res) => {
 
     if (digest === signature) {
       console.log("Payment is authorized");
-      const { courseID, userID } = req.body.payload.payment.entity.notes;
+      const { courseID, userId } = req.body.payload.payment.entity.notes;
 
       try {
         // find the course and enroll the student to the course
@@ -92,7 +92,7 @@ exports.verifySignature = async (req, res) => {
           { _id: courseID },
           {
             $push: {
-              studentsEnrolled: userID,
+              studentsEnrolled: userId,
             },
           },
           { new: true }
@@ -106,7 +106,7 @@ exports.verifySignature = async (req, res) => {
 
         // update the student schema
         const enrolledStudent = await User.findOneAndUpdate(
-          { _id: userID },
+          { _id: userId },
           {
             $push: {
               courses: courseID,

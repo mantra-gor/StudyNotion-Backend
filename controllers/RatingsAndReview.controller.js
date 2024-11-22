@@ -18,7 +18,7 @@ exports.createRatingAndReview = async (req, res) => {
 
     // fetch data
     const { courseID, rating, review } = value;
-    const { userID } = req.user.id;
+    const userId = req.user.id;
 
     const course = await Course.findById(courseID);
     if (!course) {
@@ -29,7 +29,7 @@ exports.createRatingAndReview = async (req, res) => {
     }
 
     // check is user is enrolled or not
-    if (!course.studentsEnrolled.includes(userID)) {
+    if (!course.studentsEnrolled.includes(userId)) {
       return res.status(403).json({
         success: false,
         message:
@@ -40,7 +40,7 @@ exports.createRatingAndReview = async (req, res) => {
     /* // TODO: Testing Required
       const isStudentEnrolled = await Course.findOne({
         _id: courseID,
-        studentsEnrolled: { $elemMatch: { $eq: userID } },
+        studentsEnrolled: { $elemMatch: { $eq: userId } },
       });
 
       if (!isStudentEnrolled) {
@@ -54,7 +54,7 @@ exports.createRatingAndReview = async (req, res) => {
 
     // check is user is writing the review for first time only
     const isAlreadyReviewed = await RatingsAndReview.findOne({
-      user: userID,
+      user: userId,
       course: courseID,
     });
     if (isAlreadyReviewed) {
@@ -66,7 +66,7 @@ exports.createRatingAndReview = async (req, res) => {
 
     // create rating and review
     const newRatingAndReview = await RatingsAndReview.create({
-      user: userID,
+      user: userId,
       course: courseID,
       rating: rating,
       review: review,

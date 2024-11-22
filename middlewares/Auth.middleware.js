@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const { USER_ROLES } = require("../config/constants");
 require("dotenv").config();
 
-// auth
+// auth access token
 exports.auth = async (req, res, next) => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
@@ -13,7 +13,10 @@ exports.auth = async (req, res, next) => {
       });
     }
     try {
-      const payloadData = jwt.verify(token, process.env.JWT_SECRET);
+      const payloadData = jwt.verify(
+        token,
+        process.env.JWT_ACCESS_TOKEN_SECRET
+      );
       req.user = payloadData;
     } catch (error) {
       console.error(error, "JWT_ERROR");
@@ -51,7 +54,10 @@ exports.isDeleted = async (req, res, next) => {
       });
     }
     try {
-      const payloadData = jwt.verify(token, process.env.JWT_SECRET);
+      const payloadData = jwt.verify(
+        token,
+        process.env.JWT_ACCESS_TOKEN_SECRET
+      );
       req.user = payloadData;
     } catch (error) {
       console.error(error, "JWT_ERROR");

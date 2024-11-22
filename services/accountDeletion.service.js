@@ -6,11 +6,11 @@ const {
   unsuccessfullAccountDeletion,
 } = require("../emails/templates/accountDeletion.email.js");
 
-exports.deleteAccount = async (userID) => {
+exports.deleteAccount = async (userId) => {
   let userDetails;
   try {
     // validate id
-    if (!userID) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
         message: "User ID is required field",
@@ -18,7 +18,7 @@ exports.deleteAccount = async (userID) => {
     }
 
     // delete user
-    userDetails = await User.findByIdAndDelete(userID);
+    userDetails = await User.findByIdAndDelete(userId);
     if (!userDetails) {
       return res.status(404).json({
         success: false,
@@ -32,11 +32,11 @@ exports.deleteAccount = async (userID) => {
     // removing the user from all courses he/she has enrolled
     await Course.updateMany(
       {
-        studentsEnrolled: userID,
+        studentsEnrolled: userId,
       },
       {
         $pull: {
-          studentsEnrolled: userID,
+          studentsEnrolled: userId,
         },
       }
     );
@@ -49,7 +49,7 @@ exports.deleteAccount = async (userID) => {
 
     // making the cronjob status executed
     await Cronjob.findOneAndUpdate(
-      { userId: userID },
+      { userId: userId },
       { status: CRONJOB_STATUSES.EXECUTED }
     );
 
@@ -67,7 +67,7 @@ exports.deleteAccount = async (userID) => {
 
     // making the cronjob status failed
     await Cronjob.findOneAndUpdate(
-      { userId: userID },
+      { userId: userId },
       { status: CRONJOB_STATUSES.FAILED }
     );
 

@@ -22,7 +22,7 @@ exports.updateProfile = async (req, res) => {
 
     // get the data
     const { gender, dob, about, phoneNo } = value;
-    const userID = req.user.id;
+    const userId = req.user.id;
 
     // get the data which user wants to update
     const updateDetails = {};
@@ -32,7 +32,7 @@ exports.updateProfile = async (req, res) => {
     if (phoneNo) updateDetails.phoneNo = phoneNo;
 
     // fetch the profile data from database
-    const userDetails = await User.findById(userID);
+    const userDetails = await User.findById(userId);
 
     // update the data on database
     const updatedProfile = await Profile.findByIdAndUpdate(
@@ -150,8 +150,8 @@ exports.retriveAccountRequest = async (req, res) => {
 
 exports.getEnrolledCourses = async (req, res) => {
   try {
-    const userID = req.user.id;
-    const userDetails = await User.findById(userID).populate("courses");
+    const userId = req.user.id;
+    const userDetails = await User.findById(userId).populate("courses");
 
     if (!userDetails) {
       return res.status(404).json({

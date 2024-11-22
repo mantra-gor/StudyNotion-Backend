@@ -4,16 +4,18 @@ const router = express.Router();
 
 // import auth controllers
 const {
-  sendOTP,
-  signup,
   login,
+  signup,
+  getUser,
+  sendOTP,
+  tokenRefresh,
   changePassword,
 } = require("../controllers/Auth.controller.js");
 
 // import reset password controllers
 const {
-  forgotPassword,
   resetPassword,
+  forgotPassword,
 } = require("../controllers/ResetPassword.controller.js");
 
 // import middlewares
@@ -34,6 +36,9 @@ router.post("/signup", signup);
 // Login user
 router.post("/login", login);
 
+// Get user details
+router.get("/user", auth, getUser);
+
 // OTP will only sent to a user who is already exists in database
 router.post("/sendotp", sendOTP);
 
@@ -41,7 +46,7 @@ router.post("/sendotp", sendOTP);
 router.put("/change-password", auth, changePassword);
 
 // When access token is expired and regenerating token using refresh token
-router.post("/refresh-token");
+router.post("/refresh-token", tokenRefresh);
 
 // ********************************************************************************************************
 //?                                             RESET PASSWORD

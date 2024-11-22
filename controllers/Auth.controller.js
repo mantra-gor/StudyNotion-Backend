@@ -16,6 +16,7 @@ const {
 const {
   updatePasswordEmail,
 } = require("../emails/templates/passwordUpdated.email.js");
+const { generateTokens } = require("../utils/jwtHandler.js");
 require("dotenv").config();
 
 // send otp
@@ -169,7 +170,7 @@ exports.login = async (req, res) => {
     const { email, password } = value;
 
     // check does user exist or not
-    const user = await User.findOne({ email }).populate("additionalDetails");
+    let user = await User.findOne({ email }).populate("additionalDetails");
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -179,16 +180,11 @@ exports.login = async (req, res) => {
 
     // generate JWT, after password matches
     if (await bcrypt.compare(password, user.password)) {
-      const payload = {
-        email: user.email,
-        id: user._id,
-        accountType: user.accountType,
-        isDeleted: user.isDeleted,
-      };
-      const token = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: "2h",
-      });
-      user.token = token;
+      const { accessToken, refreshToken } = generateTokens(user);
+      user = user.toObject();
+      user.accessToken = accessToken;
+      user.refreshToken = refreshToken;
+
       user.password = undefined;
       delete user.password;
 
@@ -204,7 +200,7 @@ exports.login = async (req, res) => {
       const options = {
         expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 100),
       };
-      res.cookie("token", token, options).status(200).json({
+      res.cookie("accessToken", accessToken, options).status(200).json({
         success: true,
         message: "Logged in successfully",
         data: user,
@@ -276,6 +272,98 @@ exports.changePassword = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Error while changing your password",
+      error: error.message,
+    });
+  }
+};
+
+// refresh the expired access token
+exports.tokenRefresh = async (req, res) => {
+  try {
+    const refreshToken = req.body.token;
+
+    if (!refreshToken) {
+      return res.status(404).json({
+        success: false,
+        message: "Token not found",
+      });
+    }
+
+    const payloadData = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_TOKEN_SECRET
+    );
+
+    console.log("payload", payloadData);
+
+    const userId = payloadData.id;
+    const user = await User.findById({ _id: userId });
+    console.log("user", user);
+
+    // validate the user
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // validate the user is not deleted
+    if (user.isDeleted) {
+      return res.status(403).json({
+        success: false,
+        message: "User has been requested for account deletion.",
+      });
+    }
+
+    // now generate a new access token and send it to user
+    const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+
+    console.log(newRefreshToken);
+
+    // send these to user
+    return res.status(200).json({
+      succes: true,
+      message: "Token refreshed successfully",
+      data: {
+        accessToken: accessToken,
+        refreshToken: newRefreshToken,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to generate a new token!",
+      error: error.message,
+    });
+  }
+};
+
+// get user data
+exports.getUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const userData = await User.findById({ _id: userId })
+      .populate({ path: "additionalDetails", select: "-_id" })
+      .select("-password -_id");
+
+    // validate the user
+    if (!userData) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: false,
+      message: "Authentication Successfull!",
+      data: userData,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Authentication Failed!",
       error: error.message,
     });
   }
