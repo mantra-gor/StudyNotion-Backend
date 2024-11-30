@@ -9,11 +9,11 @@ const {
 const createCourseSchema = Joi.object({
   title: titleSchema,
   description: descriptionSchema,
-  price: Joi.number().required(),
+  price: Joi.number().positive().required(),
   language: Joi.string().required(),
-  keyFeatures: arrayDataSchema,
+  keyFeatures: Joi.string().required(),
   category: Joi.string().required(),
-  tags: arrayDataSchema,
+  tags: Joi.string().required(),
   status: statusSchema,
 });
 

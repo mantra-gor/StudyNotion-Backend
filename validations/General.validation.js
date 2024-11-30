@@ -31,7 +31,7 @@ const statusSchema = Joi.string()
   .required();
 const descriptionSchema = Joi.string().min(6).max(400).required();
 const titleSchema = Joi.string().min(6).max(200).required();
-const arrayDataSchema = Joi.array().items(Joi.string()).required();
+const arrayDataSchema = Joi.array().items(Joi.string().min(1)).required();
 const thumbnailSchema = Joi.object({
   thumbnail: Joi.object({
     name: Joi.string()

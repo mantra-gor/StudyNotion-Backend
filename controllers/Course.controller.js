@@ -20,6 +20,7 @@ exports.createCourse = async (req, res) => {
     const result = thumbnailSchema.validate({
       thumbnail: req.files.courseThumbnail,
     });
+
     if (error || result.error) {
       return res.status(400).json(JoiErrorHandler(error || result.error));
     }
@@ -35,6 +36,22 @@ exports.createCourse = async (req, res) => {
       tags,
       status,
     } = value;
+
+    const parsedTags = JSON.parse(tags);
+    const parsedKeyFeatures = JSON.parse(keyFeatures);
+
+    if (!Array.isArray(parsedTags)) {
+      return res.status(400).json({
+        success: false,
+        message: "tags is not a valid array.",
+      });
+    }
+    if (!Array.isArray(parsedKeyFeatures)) {
+      return res.status(400).json({
+        success: false,
+        message: "key features is not a valid array.",
+      });
+    }
 
     const thumbnail = req.files.courseThumbnail;
 
@@ -75,9 +92,9 @@ exports.createCourse = async (req, res) => {
       description,
       price,
       language,
-      keyFeatures,
+      keyFeatures: parsedKeyFeatures,
+      tags: parsedTags,
       category,
-      tags,
       status,
       thumbnail: thumbnailDetails.secure_url,
       instructor: instructorDetails._id,
@@ -107,7 +124,7 @@ exports.createCourse = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "New course created successfully",
-      data: newCourseDetails,
+      // data: newCourseDetails,
     });
   } catch (error) {
     return res.status(500).json({
