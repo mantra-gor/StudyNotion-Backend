@@ -17,13 +17,13 @@ exports.createSubSection = async (req, res) => {
   try {
     // validate the data using Joi
     const { error, value } = createSubSectionSchema.validate(req.body);
-    const videoFile = videoFileSchema.validate(req.files.video);
+    const videoFile = videoFileSchema.validate(req.files.videoFile);
     if (error || videoFile.error) {
       return res.status(400).json(JoiErrorHandler(error || videoFile.error));
     }
 
     // getting the data
-    const { sectionID, title, description, duration } = value;
+    const { sectionID, title, description } = value;
 
     // uploading the video to cloudinary
     const videoDetails = await fileUploader(
@@ -35,7 +35,7 @@ exports.createSubSection = async (req, res) => {
     const newSubSection = await SubSection.create({
       title,
       description,
-      timeDuration: duration,
+      // timeDuration: duration,
       videoUrl: videoDetails.secure_url,
     });
 

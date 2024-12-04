@@ -10,7 +10,7 @@ const createSubSectionSchema = Joi.object({
   sectionID: idSchema,
   title: titleSchema,
   description: descriptionSchema,
-  duration: timeSchema,
+  // duration: timeSchema,
 });
 
 const updateSubSectionSchema = Joi.object({

@@ -46,21 +46,27 @@ const thumbnailSchema = Joi.object({
 });
 const videoFileSchema = Joi.object({
   name: Joi.string().required(),
+  data: Joi.binary().required(), // Ensures `data` is a binary buffer
   size: Joi.number()
-    .max(1024 * 1024 * 100)
-    .required(),
+    .max(400 * 1024 * 1024)
+    .required(), // File size should not exceed 400 MB
+  encoding: Joi.string().required(), // Encoding type
+  tempFilePath: Joi.string().allow(null, ""), // Temp file path (optional, may be empty or null)
+  truncated: Joi.boolean().required(), // Truncated status
   mimetype: Joi.string()
     .valid("video/mp4", "video/avi", "video/mov", "video/mkv")
-    .required(),
+    .required(), // Supported video file types
+  md5: Joi.string().required(), // MD5 hash for the file
 })
-  .required()
+  .unknown()
   .messages({
-    "any.required": "Video file is required",
-    "string.base": "File name must be a string",
-    "number.base": "File size must be a number",
-    "number.max": "File size must not exceed 50 MB",
+    "string.base": "Field must be a string",
+    "number.base": "Field must be a number",
+    "number.max": "File size must not exceed 400 MB",
+    "binary.base": "File data must be binary",
     "string.valid":
       "Invalid file type, must be one of video/mp4, video/avi, video/mov, video/mkv",
+    "any.required": "Field is required",
   });
 
 const genderSchema = Joi.string().valid(...Object.values(USER_GENDER));
