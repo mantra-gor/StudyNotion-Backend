@@ -7,7 +7,7 @@ const { createCourseSchema } = require("../validations/Course.validations.js");
 const JoiErrorHandler = require("../utils/errorHandler.utils.js");
 const {
   thumbnailSchema,
-  courseIdSchema,
+  idSchema,
 } = require("../validations/General.validation.js");
 
 require("dotenv").config();
@@ -167,7 +167,7 @@ exports.showAllCourses = async (_, res) => {
 exports.getCourseDetails = async (req, res) => {
   try {
     // get the data validated using Joi
-    const { error, value } = courseIdSchema.validate(req.body);
+    const { error, value } = idSchema.validate(req.body);
     if (error) {
       return res.status(400).json(JoiErrorHandler(error));
     }

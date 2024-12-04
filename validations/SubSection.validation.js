@@ -1,20 +1,20 @@
 const Joi = require("joi");
 const {
-  courseIdSchema,
+  idSchema,
   titleSchema,
   descriptionSchema,
   timeSchema,
 } = require("./General.validation");
 
 const createSubSectionSchema = Joi.object({
-  sectionID: courseIdSchema,
+  sectionID: idSchema,
   title: titleSchema,
   description: descriptionSchema,
   duration: timeSchema,
 });
 
 const updateSubSectionSchema = Joi.object({
-  subSectionID: courseIdSchema,
+  subSectionID: idSchema,
   title: titleSchema.optional(),
   description: descriptionSchema.optional(),
   duration: timeSchema.optional(),

@@ -80,10 +80,10 @@ router.post("/categoryPageDetails", categoryPageDetails);
 router.post("/create-section", auth, isInstructor, createSection);
 
 // section can only be updated by instructor
-router.put("/updateSection", auth, isInstructor, updateSection);
+router.put("/update-section", auth, isInstructor, updateSection);
 
 // section can only be deleted by instructor
-router.post("/deleteSection", auth, isInstructor, deleteSection);
+router.delete("/delete-section", auth, isInstructor, deleteSection);
 
 // ********************************************************************************************************
 //?                                              SUBSECTION ROUTES
@@ -93,10 +93,10 @@ router.post("/deleteSection", auth, isInstructor, deleteSection);
 router.post("/create-subsection", auth, isInstructor, createSubSection);
 
 // subsection can only be updated by instructor
-router.put("/updateSubsection", auth, isInstructor, updateSubSection);
+router.put("/update-subsection", auth, isInstructor, updateSubSection);
 
 // subsection can only be deleted by instructor
-router.post("/deleteSubsection", auth, isInstructor, deleteSubSection);
+router.delete("/delete-subsection", auth, isInstructor, deleteSubSection);
 
 // ********************************************************************************************************
 //?                                            RATING AND REVIEW ROUTES

@@ -1,11 +1,24 @@
 const Joi = require("joi");
-const { titleSchema, courseIdSchema } = require("./General.validation");
+const { titleSchema, idSchema } = require("./General.validation");
 
-const crudSectionSchema = Joi.object({
+const createSectionSchema = Joi.object({
   sectionName: titleSchema,
-  courseID: courseIdSchema,
+  courseID: idSchema,
+});
+
+const updateSectionSchema = Joi.object({
+  sectionName: titleSchema,
+  courseID: idSchema,
+  sectionID: idSchema,
+});
+
+const deleteSectionSchema = Joi.object({
+  sectionID: idSchema,
+  courseID: idSchema,
 });
 
 module.exports = {
-  crudSectionSchema,
+  createSectionSchema,
+  deleteSectionSchema,
+  updateSectionSchema,
 };

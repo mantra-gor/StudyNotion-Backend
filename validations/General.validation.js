@@ -65,7 +65,7 @@ const videoFileSchema = Joi.object({
 
 const genderSchema = Joi.string().valid(...Object.values(USER_GENDER));
 const dobSchema = Joi.date().required();
-const courseIdSchema = Joi.string().required();
+const idSchema = Joi.string().required();
 const timeSchema = Joi.string()
   .pattern(/^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/)
   .required()
@@ -82,7 +82,6 @@ module.exports = {
   arrayDataSchema,
   thumbnailSchema,
   videoFileSchema,
-  courseIdSchema,
   statusSchema,
   genderSchema,
   countryCode,
@@ -92,4 +91,5 @@ module.exports = {
   timeSchema,
   otpSchema,
   dobSchema,
+  idSchema,
 };

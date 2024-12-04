@@ -3,7 +3,7 @@ const Section = require("../models/Section.model.js");
 const { fileUploader, deleteFile } = require("../utils/fileUploader.utils.js");
 const JoiErrorHandler = require("../utils/errorHandler.utils.js");
 const {
-  courseIdSchema,
+  idSchema,
   videoFileSchema,
 } = require("../validations/General.validation.js");
 const {
@@ -139,23 +139,44 @@ exports.updateSubSection = async (req, res) => {
 // delete subsection
 exports.deleteSubSection = async (req, res) => {
   try {
-    const { error, value } = courseIdSchema.validate(req.body);
+    const { error, value } = idSchema.validate(req.body);
     if (error) {
       return res.status(400).json(JoiErrorHandler(error));
     }
     // get data
-    const { subSectionID } = value;
+    const { subSectionID, courseID } = value;
+    const instructorId = req.user.id;
 
-    // validate data
-    if (!subSectionID) {
+    const course = await Course.findById(courseID)
+      .populate("courseContent")
+      .populate({
+        path: "courseContent.subSection",
+        model: "SubSection",
+      });
+
+    if (!course) {
       return res.status(404).json({
         success: false,
-        message: "Subsection not found",
+        message: "Course not found",
+      });
+    }
+
+    // verify is the course is owned by the instructor or not
+    if (String(course.instructor) !== instructorId) {
+      return res.status(403).json({
+        success: false,
+        message: "This course is not owned by you.",
       });
     }
 
     // delete document from database
     const subSectionDetails = await SubSection.findByIdAndDelete(subSectionID);
+    if (!subSectionDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "Subsection not found",
+      });
+    }
 
     // delete video from cloudinary
     const result = await deleteFile(subSectionDetails.videoUrl);
@@ -170,6 +191,7 @@ exports.deleteSubSection = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Subsection deleted successfully",
+      data: course,
     });
   } catch (error) {
     return res.status(500).json({

@@ -5,7 +5,7 @@ const JoiErrorHandler = require("../utils/errorHandler.utils.js");
 const {
   createRatingAndReviewSchema,
 } = require("../validations/RatingAndReview.validation.js");
-const { courseIdSchema } = require("../validations/General.validation.js");
+const { idSchema } = require("../validations/General.validation.js");
 
 // create rating
 exports.createRatingAndReview = async (req, res) => {
@@ -97,7 +97,7 @@ exports.createRatingAndReview = async (req, res) => {
 exports.getAverageRating = async (req, res) => {
   try {
     // validate the data using Joi
-    const { error, value } = courseIdSchema.validate(req.body);
+    const { error, value } = idSchema.validate(req.body);
     if (error) {
       return res.status(400).json(JoiErrorHandler(error));
     }
@@ -156,7 +156,7 @@ exports.getAverageRating = async (req, res) => {
 exports.getRatingsAndReviews = async (req, res) => {
   try {
     // validate the data using Joi
-    const { error, value } = courseIdSchema.validate(req.body);
+    const { error, value } = idSchema.validate(req.body);
     if (error) {
       return res.status(400).json(JoiErrorHandler(error));
     }
