@@ -1,5 +1,6 @@
 const SubSection = require("../models/SubSection.model.js");
 const Section = require("../models/Section.model.js");
+const Course = require("../models/Courses.model.js");
 const { fileUploader, deleteFile } = require("../utils/fileUploader.utils.js");
 const JoiErrorHandler = require("../utils/errorHandler.utils.js");
 const {
@@ -9,6 +10,7 @@ const {
 const {
   createSubSectionSchema,
   updateSubSectionSchema,
+  deleteSubSectionSchema,
 } = require("../validations/SubSection.validation.js");
 require("dotenv").config();
 
@@ -108,7 +110,7 @@ exports.updateSubSection = async (req, res) => {
         process.env.FOLDER_NAME
       );
 
-      // TODO: after updating the video ensure to delete the old video from cloud
+      // TODO: after updating the video ensure to delete the old video from cloud storage
 
       // add new video url to updateDetails object
       updatedDetails.videoUrl = newVideoDetails.secure_url;
@@ -139,7 +141,7 @@ exports.updateSubSection = async (req, res) => {
 // delete subsection
 exports.deleteSubSection = async (req, res) => {
   try {
-    const { error, value } = idSchema.validate(req.body);
+    const { error, value } = deleteSubSectionSchema.validate(req.body);
     if (error) {
       return res.status(400).json(JoiErrorHandler(error));
     }

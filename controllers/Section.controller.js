@@ -29,12 +29,13 @@ exports.createSection = async (req, res) => {
         },
       },
       { new: true }
-    )
-      .populate("courseContent")
-      .populate({
-        path: "courseContent.subSection",
+    ).populate({
+      path: "courseContent",
+      populate: {
+        path: "subSection",
         model: "SubSection",
-      });
+      },
+    });
 
     // return response
     return res.status(200).json({

@@ -13,6 +13,11 @@ const createSubSectionSchema = Joi.object({
   // duration: timeSchema,
 });
 
+const deleteSubSectionSchema = Joi.object({
+  subSectionID: idSchema,
+  courseID: idSchema,
+});
+
 const updateSubSectionSchema = Joi.object({
   subSectionID: idSchema,
   title: titleSchema.optional(),
@@ -22,5 +27,6 @@ const updateSubSectionSchema = Joi.object({
 
 module.exports = {
   createSubSectionSchema,
+  deleteSubSectionSchema,
   updateSubSectionSchema,
 };

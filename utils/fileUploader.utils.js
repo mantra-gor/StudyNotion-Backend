@@ -13,15 +13,22 @@ exports.fileUploader = async (file, folder, height, quality) => {
 
 exports.deleteFile = async (fileUrl) => {
   try {
-    const result = await cloudinary.uploader.delete_resources_by_prefix(
-      fileUrl,
-      {
-        resource_type: "auto",
-      }
-    );
-    return result;
+    // Extract public ID from the public URL
+    const urlParts = fileUrl.split("/");
+    const fileName = urlParts[urlParts.length - 1];
+    const publicId = fileName.split(".")[0];
+
+    // Delete the video
+    const result = await cloudinary.uploader.destroy(publicId, {
+      resource_type: "video",
+    });
+
+    if (result.result === "ok") {
+      console.log("Video deleted successfully");
+    } else {
+      console.log("Failed to delete video");
+    }
   } catch (error) {
     console.error("Error deleting video:", error);
-    throw error;
   }
 };
