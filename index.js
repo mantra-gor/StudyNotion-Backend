@@ -42,6 +42,8 @@ app.use(limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+// multer middleware
+// express-fileupload middleware
 app.use(fileUpload({ useTempFiles: true, tempFileDir: "/tmp/" }));
 
 // connect to cloudinary
