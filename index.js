@@ -80,6 +80,7 @@ const mailSender = require("./utils/mailSender.utils.js");
 const {
   updatePassword,
 } = require("./emails/templates/passwordUpdated.email.js");
+const { initS3 } = require("./utils/s3.utils.js");
 
 async function testMails() {
   const title = "Your password is changed successfully";
