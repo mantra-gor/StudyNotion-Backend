@@ -9,7 +9,6 @@ const {
   thumbnailSchema,
   idSchema,
 } = require("../validations/General.validation.js");
-
 require("dotenv").config();
 
 // createCourse hnadler function
@@ -35,6 +34,7 @@ exports.createCourse = async (req, res) => {
       category,
       tags,
       status,
+      thumbnailMeta,
     } = value;
 
     const parsedTags = JSON.parse(tags);

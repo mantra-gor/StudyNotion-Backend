@@ -21,6 +21,14 @@ const coursesSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    thumbnailInfo: {
+      type: Object,
+      required: true,
+      properties: {
+        key: { type: String },
+        contentType: { type: String },
+      },
+    },
     language: {
       type: String,
     },

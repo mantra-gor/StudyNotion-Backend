@@ -16,9 +16,13 @@ const subSectionSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    videoKey: {
-      type: String,
+    videoInfo: {
+      type: Object,
       required: true,
+      properties: {
+        key: { type: String },
+        contentType: { type: String },
+      },
     },
     videoUrl: {
       type: String,

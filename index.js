@@ -89,3 +89,5 @@ async function testMails() {
   await mailSender(email, title, body);
 }
 // testMails();
+
+// initS3("video/*", "courses");

@@ -14,21 +14,17 @@ async function getObjectURL(key) {
 }
 
 async function putObject(filename, contentType, folder) {
+  const timestamp = Date.now();
+  const key = `uploads/${folder}/${filename}-${timestamp}`;
+
   const command = new PutObjectCommand({
     Bucket: S3_BUCKET_NAME,
-    Key: `/uploads/${folder}/${filename}`,
+    Key: key,
     ContentType: contentType,
   });
 
   const url = await getSignedUrl(client, command, { expiresIn: 300 });
-  return url;
+  return { url, key };
 }
 
-async function initS3() {
-  console.log(
-    "URL: ",
-    await putObject(`${Date.now}`, "image/jpeg", "thumbnails")
-  );
-}
-
-module.exports = { getObjectURL, putObject, initS3 };
+module.exports = { getObjectURL, putObject };

@@ -44,6 +44,10 @@ const thumbnailSchema = Joi.object({
     .unknown()
     .required(),
 });
+const fileMetadataSchema = Joi.object({
+  contentType: Joi.string().required(),
+  size: Joi.number().required(),
+});
 const videoFileSchema = Joi.object({
   name: Joi.string().required(),
   data: Joi.binary().required(), // Ensures `data` is a binary buffer
@@ -81,6 +85,7 @@ const timeSchema = Joi.string()
   });
 
 module.exports = {
+  fileMetadataSchema,
   accountTypeSchema,
   descriptionSchema,
   phoneNumberSchema,
