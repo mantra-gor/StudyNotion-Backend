@@ -49,6 +49,10 @@ const fileMetadataSchema = Joi.object({
   contentType: Joi.string().required(),
   size: Joi.number().required(),
 });
+const fileKey = Joi.object({
+  key: Joi.string().required(),
+  contentType: Joi.string().required(),
+});
 const videoFileSchema = Joi.object({
   name: Joi.string().required(),
   data: Joi.binary().required(), // Ensures `data` is a binary buffer
@@ -104,4 +108,5 @@ module.exports = {
   otpSchema,
   dobSchema,
   idSchema,
+  fileKey,
 };

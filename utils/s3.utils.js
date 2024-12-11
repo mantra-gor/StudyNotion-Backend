@@ -14,9 +14,7 @@ async function getObjectURL(key) {
 }
 
 async function putObject(filename, contentType, folder) {
-  const timestamp = Date.now();
-  const key = `uploads/${folder}/${filename}-${timestamp}`;
-
+  const key = keyGenerator(filename, folder);
   const command = new PutObjectCommand({
     Bucket: S3_BUCKET_NAME,
     Key: key,
@@ -25,6 +23,18 @@ async function putObject(filename, contentType, folder) {
 
   const url = await getSignedUrl(client, command, { expiresIn: 300 });
   return { url, key };
+}
+
+function keyGenerator(filename, folder) {
+  // Extract the file extension
+  const extension = filename.split(".").pop();
+  // Extract and sanitize the base name
+  const baseName = filename.substring(0, filename.lastIndexOf(".")) || filename;
+  const sanitizedBaseName = baseName.replace(/[^a-zA-Z0-9-_]/g, "");
+  // Generate a unique timestamp
+  const timestamp = Date.now();
+  // Construct and return the key
+  return `uploads/${folder}/${sanitizedBaseName}-${timestamp}.${extension}`;
 }
 
 module.exports = { getObjectURL, putObject };

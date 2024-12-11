@@ -22,13 +22,9 @@ exports.createPutObjectUrl = async (req, res) => {
       return res.status(400).json(JoiErrorHandler(error || result.error));
     }
 
-    const { thumbnailMeta } = value;
+    const { fileName, contentType, size } = value;
 
-    const { url, key } = await putObject(
-      thumbnailMeta.fileName,
-      thumbnailMeta.contentType,
-      "thumbnail"
-    );
+    const { url, key } = await putObject(fileName, contentType, "thumbnail");
 
     if (!url || !key) {
       return res.status(404).json({
@@ -39,12 +35,16 @@ exports.createPutObjectUrl = async (req, res) => {
 
     const thumbnailInfo = {
       key,
-      contentType: thumbnailMeta.contentType,
+      contentType: contentType,
     };
 
     res.status(200).json({
       success: true,
-      message: "Generated ",
+      message: "S3 URL generated Successfully",
+      data: {
+        url,
+        thumbnailInfo,
+      },
     });
   } catch (error) {
     return res.status(500).json({
@@ -75,29 +75,13 @@ exports.createCourse = async (req, res) => {
       category,
       tags,
       status,
-      thumbnailMeta,
+      fileKey,
     } = value;
 
-    // const parsedTags = JSON.parse(tags);
-    // const parsedKeyFeatures = JSON.parse(keyFeatures);
-
-    // if (!Array.isArray(parsedTags)) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "tags is not a valid array.",
-    //   });
-    // }
-    // if (!Array.isArray(parsedKeyFeatures)) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "key features is not a valid array.",
-    //   });
-    // }
-
-    if (!thumbnailMeta) {
+    if (!fileKey) {
       return res.status(400).json({
         success: false,
-        message: "Thumbnail is required",
+        message: "Thumbnail is required!",
       });
     }
 
@@ -119,20 +103,6 @@ exports.createCourse = async (req, res) => {
       });
     }
 
-    const { url, key } = await putObject(
-      thumbnailMeta.fileName,
-      thumbnailMeta.contentType,
-      "thumbnail"
-    );
-
-    console.log(url);
-    console.log(key);
-
-    const thumbnailInfo = {
-      key,
-      contentType: thumbnailMeta.contentType,
-    };
-
     // create new course entry in db
     const newCourseDetails = await Course.create({
       title,
@@ -143,7 +113,7 @@ exports.createCourse = async (req, res) => {
       tags,
       category,
       status,
-      thumbnailInfo,
+      thumbnailInfo: fileKey,
       instructor: instructorDetails._id,
     });
 
