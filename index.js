@@ -80,7 +80,7 @@ const mailSender = require("./utils/mailSender.utils.js");
 const {
   updatePassword,
 } = require("./emails/templates/passwordUpdated.email.js");
-const { initS3, putObject } = require("./utils/s3.utils.js");
+const { initS3, putObject, getObjectURL } = require("./utils/s3.utils.js");
 
 async function testMails() {
   const title = "Your password is changed successfully";
@@ -96,3 +96,10 @@ const textS3Upload = async () => {
   console.log("\n \n \t KEY: ", key);
 };
 // textS3Upload();
+
+const textS3Presigned = async () => {
+  const url = await getObjectURL("uploads/courses/1733830753374");
+  console.log("Get URL: ", url);
+};
+
+// textS3Presigned();

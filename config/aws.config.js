@@ -9,6 +9,7 @@ const client = new S3Client({
     accessKeyId: AWS_ACCESS_KEY_ID,
     secretAccessKey: AWS_SECRET_ACCESS_KEY,
   },
+  // useAccelerateEndpoint: true,
 });
 
 module.exports = client;
