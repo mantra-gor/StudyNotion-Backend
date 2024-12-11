@@ -27,3 +27,9 @@ exports.CRONJOB_STATUSES = {
 exports.CRONJOB_TYPES = {
   DELETION: "Deletion",
 };
+
+// S3 FOLDERS
+exports.S3_FOLDERS = {
+  THUMBNAILS: "thumbnails",
+  COURSES: "courses",
+};

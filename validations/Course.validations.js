@@ -13,9 +13,9 @@ const createCourseSchema = Joi.object({
   description: descriptionSchema,
   price: Joi.number().positive().required(),
   language: Joi.string().required(),
-  keyFeatures: Joi.string().required(),
   category: Joi.string().required(),
-  tags: Joi.string().required(),
+  keyFeatures: arrayDataSchema,
+  tags: arrayDataSchema,
   status: statusSchema,
 });
 

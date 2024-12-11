@@ -9,6 +9,7 @@ const {
   thumbnailSchema,
   idSchema,
 } = require("../validations/General.validation.js");
+const { putObject } = require("../utils/s3.utils.js");
 require("dotenv").config();
 
 // createCourse hnadler function
@@ -16,11 +17,8 @@ exports.createCourse = async (req, res) => {
   try {
     // validate the data using Joi
     const { error, value } = createCourseSchema.validate(req.body);
-    const result = thumbnailSchema.validate({
-      thumbnail: req.files.courseThumbnail,
-    });
 
-    if (error || result.error) {
+    if (error) {
       return res.status(400).json(JoiErrorHandler(error || result.error));
     }
 
@@ -37,25 +35,23 @@ exports.createCourse = async (req, res) => {
       thumbnailMeta,
     } = value;
 
-    const parsedTags = JSON.parse(tags);
-    const parsedKeyFeatures = JSON.parse(keyFeatures);
+    // const parsedTags = JSON.parse(tags);
+    // const parsedKeyFeatures = JSON.parse(keyFeatures);
 
-    if (!Array.isArray(parsedTags)) {
-      return res.status(400).json({
-        success: false,
-        message: "tags is not a valid array.",
-      });
-    }
-    if (!Array.isArray(parsedKeyFeatures)) {
-      return res.status(400).json({
-        success: false,
-        message: "key features is not a valid array.",
-      });
-    }
+    // if (!Array.isArray(parsedTags)) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "tags is not a valid array.",
+    //   });
+    // }
+    // if (!Array.isArray(parsedKeyFeatures)) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "key features is not a valid array.",
+    //   });
+    // }
 
-    const thumbnail = req.files.courseThumbnail;
-
-    if (!thumbnail) {
+    if (!thumbnailMeta) {
       return res.status(400).json({
         success: false,
         message: "Thumbnail is required",
@@ -80,11 +76,19 @@ exports.createCourse = async (req, res) => {
       });
     }
 
-    // upload thumbnail to cloudinary
-    const thumbnailDetails = await fileUploader(
-      thumbnail,
-      process.env.FOLDER_NAME
+    const { url, key } = await putObject(
+      thumbnailMeta.fileName,
+      thumbnailMeta.contentType,
+      "thumbnail"
     );
+
+    console.log(url);
+    console.log(key);
+
+    const thumbnailInfo = {
+      key,
+      contentType: thumbnailMeta.contentType,
+    };
 
     // create new course entry in db
     const newCourseDetails = await Course.create({
@@ -92,11 +96,11 @@ exports.createCourse = async (req, res) => {
       description,
       price,
       language,
-      keyFeatures: parsedKeyFeatures,
-      tags: parsedTags,
+      keyFeatures,
+      tags,
       category,
       status,
-      thumbnail: thumbnailDetails.secure_url,
+      thumbnailInfo,
       instructor: instructorDetails._id,
     });
 

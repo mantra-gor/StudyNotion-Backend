@@ -45,6 +45,7 @@ const thumbnailSchema = Joi.object({
     .required(),
 });
 const fileMetadataSchema = Joi.object({
+  fileName: Joi.string().required(),
   contentType: Joi.string().required(),
   size: Joi.number().required(),
 });
