@@ -19,6 +19,7 @@ async function putObject(filename, contentType, folder) {
     Bucket: S3_BUCKET_NAME,
     Key: key,
     ContentType: contentType,
+    ACL: "public-read",
   });
 
   const url = await getSignedUrl(client, command, { expiresIn: 300 });

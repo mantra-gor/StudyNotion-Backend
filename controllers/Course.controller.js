@@ -10,7 +10,7 @@ const {
   idSchema,
   fileMetadataSchema,
 } = require("../validations/General.validation.js");
-const { putObject } = require("../utils/s3.utils.js");
+const { putObject, getObjectURL } = require("../utils/s3.utils.js");
 require("dotenv").config();
 
 // create s3 put object url for course
@@ -218,6 +218,11 @@ exports.getCourseDetails = async (req, res) => {
         message: "Course not found",
       });
     }
+
+    // get object url of thumbnail and add it into the courseDetails
+    courseDetails.thumbnailUrl = await getObjectURL(
+      courseDetails.thumbnailInfo.key
+    );
 
     // return response
     return res.status(200).json({
