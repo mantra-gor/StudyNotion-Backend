@@ -24,7 +24,12 @@ exports.createPutObjectUrl = async (req, res) => {
 
     const { fileName, contentType, size } = value;
 
-    const { url, key } = await putObject(fileName, contentType, "thumbnail");
+    const { url, key, objectUrl } = await putObject(
+      fileName,
+      contentType,
+      "thumbnail",
+      true
+    );
 
     if (!url || !key) {
       return res.status(404).json({
@@ -35,6 +40,7 @@ exports.createPutObjectUrl = async (req, res) => {
 
     const thumbnailInfo = {
       key,
+      objectUrl,
       contentType: contentType,
     };
 

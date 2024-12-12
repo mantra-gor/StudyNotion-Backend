@@ -24,6 +24,7 @@ const coursesSchema = new mongoose.Schema(
       type: Object,
       required: true,
       properties: {
+        ObjectURL: { type: String },
         key: { type: String },
         contentType: { type: String },
       },

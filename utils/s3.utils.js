@@ -2,7 +2,7 @@ const { GetObjectCommand, PutObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const client = require("../config/aws.config");
 
-const { S3_BUCKET_NAME } = process.env;
+const { S3_BUCKET_NAME, AWS_S3_REGION } = process.env;
 
 async function getObjectURL(key) {
   const command = new GetObjectCommand({
@@ -13,17 +13,22 @@ async function getObjectURL(key) {
   return url;
 }
 
-async function putObject(filename, contentType, folder) {
+async function putObject(filename, contentType, folder, public = false) {
   const key = keyGenerator(filename, folder);
-  const command = new PutObjectCommand({
+  // Create the command with or without ACL based on the 'public' parameter
+  const commandConfig = {
     Bucket: S3_BUCKET_NAME,
     Key: key,
     ContentType: contentType,
-    ACL: "public-read",
-  });
-
+  };
+  if (public) {
+    commandConfig.ACL = "public-read"; // Add ACL only if public is true
+  }
+  const command = new PutObjectCommand(commandConfig);
+  // Generate the signed URL for uploading
   const url = await getSignedUrl(client, command, { expiresIn: 300 });
-  return { url, key };
+  const objectUrl = `https://${S3_BUCKET_NAME}.s3.${AWS_S3_REGION}.amazonaws.com/${key}`;
+  return { url, key, objectUrl };
 }
 
 function keyGenerator(filename, folder) {

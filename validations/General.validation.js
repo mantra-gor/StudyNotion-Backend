@@ -44,6 +44,7 @@ const thumbnailSchema = Joi.object({
     .unknown()
     .required(),
 });
+
 const fileMetadataSchema = Joi.object({
   fileName: Joi.string().required(),
   contentType: Joi.string().required(),
@@ -52,7 +53,8 @@ const fileMetadataSchema = Joi.object({
 const fileKey = Joi.object({
   key: Joi.string().required(),
   contentType: Joi.string().required(),
-});
+}).unknown();
+
 const videoFileSchema = Joi.object({
   name: Joi.string().required(),
   data: Joi.binary().required(), // Ensures `data` is a binary buffer
