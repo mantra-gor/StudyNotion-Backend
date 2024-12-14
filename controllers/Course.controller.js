@@ -13,54 +13,6 @@ const {
 const { putObject, getObjectURL } = require("../utils/s3.utils.js");
 require("dotenv").config();
 
-// create s3 put object url for course
-exports.createPutObjectUrl = async (req, res) => {
-  try {
-    // validate the data using Joi
-    const { error, value } = fileMetadataSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json(JoiErrorHandler(error || result.error));
-    }
-
-    const { fileName, contentType, size } = value;
-
-    const { url, key, objectUrl } = await putObject(
-      fileName,
-      contentType,
-      "thumbnail",
-      true
-    );
-
-    if (!url || !key) {
-      return res.status(404).json({
-        success: false,
-        message: "Failed to generate S3 presigned url",
-      });
-    }
-
-    const thumbnailInfo = {
-      key,
-      objectUrl,
-      contentType: contentType,
-    };
-
-    res.status(200).json({
-      success: true,
-      message: "S3 URL generated Successfully",
-      data: {
-        url,
-        thumbnailInfo,
-      },
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Something went wrong while creating new course",
-      error: error.message,
-    });
-  }
-};
-
 // createCourse hnadler function
 exports.createCourse = async (req, res) => {
   try {

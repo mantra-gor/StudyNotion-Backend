@@ -1,4 +1,9 @@
-const { GetObjectCommand, PutObjectCommand } = require("@aws-sdk/client-s3");
+const {
+  GetObjectCommand,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+} = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const client = require("../config/aws.config");
 
@@ -13,7 +18,7 @@ async function getObjectURL(key) {
   return url;
 }
 
-async function putObject(filename, contentType, folder, public = false) {
+async function putObject({ filename, contentType, folder, public = false }) {
   const key = keyGenerator(filename, folder);
   // Create the command with or without ACL based on the 'public' parameter
   const commandConfig = {
@@ -31,6 +36,24 @@ async function putObject(filename, contentType, folder, public = false) {
   return { url, key, objectUrl };
 }
 
+async function deleteSingleObject(key) {
+  const command = new DeleteObjectCommand({
+    Bucket: S3_BUCKET_NAME,
+    Key: key,
+  });
+  await client.send(command);
+}
+
+async function deleteMultipleObject(keys) {
+  const command = new DeleteObjectsCommand({
+    Bucket: S3_BUCKET_NAME,
+    Delete: {
+      Objects: keys,
+    },
+  });
+  await client.send(command);
+}
+
 function keyGenerator(filename, folder) {
   // Extract the file extension
   const extension = filename.split(".").pop();
@@ -43,4 +66,9 @@ function keyGenerator(filename, folder) {
   return `uploads/${folder}/${sanitizedBaseName}-${timestamp}.${extension}`;
 }
 
-module.exports = { getObjectURL, putObject };
+module.exports = {
+  getObjectURL,
+  putObject,
+  deleteSingleObject,
+  deleteMultipleObject,
+};

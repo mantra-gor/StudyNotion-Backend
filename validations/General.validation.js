@@ -50,6 +50,7 @@ const fileMetadataSchema = Joi.object({
   contentType: Joi.string().required(),
   size: Joi.number().required(),
 });
+
 const fileKey = Joi.object({
   key: Joi.string().required(),
   contentType: Joi.string().required(),
