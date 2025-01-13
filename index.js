@@ -8,6 +8,7 @@ const cors = require("cors");
 const { cloudinaryConnect } = require("./config/cloudinary.config.js");
 const fileUpload = require("express-fileupload");
 const port = process.env.PORT || 4000;
+const path = require("path");
 
 // initialize the express application
 const app = express();
@@ -43,6 +44,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(fileUpload({ useTempFiles: true, tempFileDir: "/tmp/" }));
+app.use(express.static(path.join(__dirname, "documentation")));
 
 // connect to cloudinary
 cloudinaryConnect();
@@ -53,20 +55,14 @@ const profileRoutes = require("./routes/Profile.routes.js");
 const generalRoutes = require("./routes/General.routes.js");
 // const paymentRoutes = require("./routes/Payment.routes.js");
 const courseRoutes = require("./routes/Course.routes.js");
-// const defaultRoutes = require("./routes/Default.routes.js");
+const defaultRoutes = require("./routes/Default.routes.js");
 
+app.use("/", defaultRoutes);
 app.use("/api/v1", generalRoutes);
 app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/course", courseRoutes);
 // app.use("/api/v1/payment", paymentRoutes);
-// app.use("/", defaultRoutes);
-
-app.get("/", (req, res) => {
-  return res.status(200).send(`<h1>Welcome to StudyNotion</h1>`).json({
-    message: "Welcome to studynotion",
-  });
-});
 
 // activate the server
 app.listen(port, () => {
