@@ -1,17 +1,13 @@
 const SubSection = require("../models/SubSection.model.js");
 const Section = require("../models/Section.model.js");
 const Course = require("../models/Courses.model.js");
-const { fileUploader, deleteFile } = require("../utils/fileUploader.utils.js");
 const JoiErrorHandler = require("../utils/errorHandler.utils.js");
-const {
-  idSchema,
-  videoFileSchema,
-} = require("../validations/General.validation.js");
 const {
   createSubSectionSchema,
   updateSubSectionSchema,
   deleteSubSectionSchema,
 } = require("../validations/SubSection.validation.js");
+const { deleteSingleObject } = require("../utils/s3.utils.js");
 require("dotenv").config();
 
 // create subsection
@@ -19,26 +15,28 @@ exports.createSubSection = async (req, res) => {
   try {
     // validate the data using Joi
     const { error, value } = createSubSectionSchema.validate(req.body);
-    const videoFile = videoFileSchema.validate(req.files.videoFile);
-    if (error || videoFile.error) {
+    if (error) {
       return res.status(400).json(JoiErrorHandler(error || videoFile.error));
     }
 
     // getting the data
-    const { sectionID, title, description } = value;
+    const { sectionID, title, description, fileKey } = value;
 
-    // uploading the video to cloudinary
-    const videoDetails = await fileUploader(
-      videoFile.value,
-      process.env.FOLDER_NAME
-    );
+    // get object url of
+    if (!fileKey) {
+      return res.status(400).json({
+        success: false,
+        message: "Course video is required!",
+      });
+    }
 
     // create entry in db
     const newSubSection = await SubSection.create({
       title,
       description,
+      videoInfo: fileKey,
       // timeDuration: duration,
-      videoUrl: videoDetails.secure_url,
+      // videoUrl: videoDetails.secure_url,
     });
 
     // update the section schema
@@ -71,50 +69,53 @@ exports.createSubSection = async (req, res) => {
 exports.updateSubSection = async (req, res) => {
   try {
     const { error, value } = updateSubSectionSchema.validate(req.body);
-    const videoFile = videoFileSchema(req.files.video);
-    if (error || videoFile.error) {
+    // const videoFile = videoFileSchema(req.files.video);
+
+    if (error) {
       return res.status(400).json(JoiErrorHandler(error));
     }
 
     // get data
-    const { subSectionID, title, description, duration } = value;
-    const video = videoFile.value;
+    const { sectionID, subSectionID, title, description, duration, videoFile } =
+      value;
+    // const video = videoFile.value;
 
     // getting all details what user want to update
     const updatedDetails = {};
     if (title) updatedDetails.title = title;
     if (description) updatedDetails.description = description;
     if (duration) updatedDetails.duration = description;
-    if (video) {
-      // get the details of subsectiona and validate it
-      const subSectionDetails = await SubSection.findById(subSectionID);
-      if (!subSectionDetails) {
-        return res.status(404).json({
-          success: false,
-          message: "Subsection not found",
-        });
-      }
 
-      // delete the old video from cloudinary
-      const result = await deleteFile(subSectionDetails.videoUrl);
-      if (!result) {
-        return res.status(400).json({
-          success: false,
-          message: "Something went wrong",
-        });
-      }
+    // if (video) {
+    //   // get the details of subsectiona and validate it
+    //   const subSectionDetails = await SubSection.findById(subSectionID);
+    //   if (!subSectionDetails) {
+    //     return res.status(404).json({
+    //       success: false,
+    //       message: "Subsection not found",
+    //     });
+    //   }
 
-      // upload new video to cloudinary
-      const newVideoDetails = await fileUploader(
-        video,
-        process.env.FOLDER_NAME
-      );
+    //   // delete the old video from cloudinary
+    //   const result = await deleteFile(subSectionDetails.videoUrl);
+    //   if (!result) {
+    //     return res.status(400).json({
+    //       success: false,
+    //       message: "Something went wrong",
+    //     });
+    //   }
 
-      // TODO: after updating the video ensure to delete the old video from cloud storage
+    //   // upload new video to cloudinary
+    //   const newVideoDetails = await fileUploader(
+    //     video,
+    //     process.env.FOLDER_NAME
+    //   );
 
-      // add new video url to updateDetails object
-      updatedDetails.videoUrl = newVideoDetails.secure_url;
-    }
+    //   // TODO: after updating the video ensure to delete the old video from cloud storage
+
+    //   // add new video url to updateDetails object
+    //   updatedDetails.videoUrl = newVideoDetails.secure_url;
+    // }
 
     // update data in db
     const updatedSubSection = await SubSection.findByIdAndUpdate(
@@ -123,11 +124,15 @@ exports.updateSubSection = async (req, res) => {
       { new: true }
     );
 
+    const updatedSection = await Section.findById(sectionID).populate(
+      "subSection"
+    );
+
     // return response
     return res.status(200).json({
       success: true,
       message: "Subsection updated successfully",
-      data: updatedSubSection,
+      data: updatedSection,
     });
   } catch (error) {
     return res.status(500).json({
@@ -149,12 +154,13 @@ exports.deleteSubSection = async (req, res) => {
     const { subSectionID, courseID } = value;
     const instructorId = req.user.id;
 
-    const course = await Course.findById(courseID)
-      .populate("courseContent")
-      .populate({
-        path: "courseContent.subSection",
+    const course = await Course.findById(courseID).populate({
+      path: "courseContent",
+      populate: {
+        path: "subSection",
         model: "SubSection",
-      });
+      },
+    });
 
     if (!course) {
       return res.status(404).json({
@@ -180,20 +186,22 @@ exports.deleteSubSection = async (req, res) => {
       });
     }
 
-    // delete video from cloudinary
-    const result = await deleteFile(subSectionDetails.videoUrl);
-    if (!result) {
-      return res.status(400).json({
-        success: false,
-        message: "Something went wrong",
-      });
-    }
+    // delete video from s3 bucket
+    await deleteSingleObject(subSectionDetails.videoInfo.key);
+
+    const updatedCourse = await Course.findById(courseID).populate({
+      path: "courseContent",
+      populate: {
+        path: "subSection",
+        model: "SubSection",
+      },
+    });
 
     // return response
     return res.status(200).json({
       success: true,
       message: "Subsection deleted successfully",
-      data: course,
+      data: updatedCourse,
     });
   } catch (error) {
     return res.status(500).json({

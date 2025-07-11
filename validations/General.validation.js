@@ -51,7 +51,7 @@ const fileMetadataSchema = Joi.object({
   size: Joi.number().required(),
 });
 
-const fileKey = Joi.object({
+const fileKeySchema = Joi.object({
   key: Joi.string().required(),
   contentType: Joi.string().required(),
 }).unknown();
@@ -101,6 +101,7 @@ module.exports = {
   arrayDataSchema,
   thumbnailSchema,
   videoFileSchema,
+  fileKeySchema,
   statusSchema,
   genderSchema,
   countryCode,
@@ -111,5 +112,4 @@ module.exports = {
   otpSchema,
   dobSchema,
   idSchema,
-  fileKey,
 };

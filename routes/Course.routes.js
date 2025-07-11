@@ -7,6 +7,9 @@ const {
   createCourse,
   showAllCourses,
   getCourseDetails,
+  editCourse,
+  getCoursesByInstructor,
+  deleteCourse,
 } = require("../controllers/Course.controller.js");
 
 // import category controllers
@@ -52,6 +55,20 @@ const {
 
 // Courses can only be created by the Instructors
 router.post("/create-course", auth, isInstructor, createCourse);
+
+// Edit course can only be done by the instructor
+router.put("/edit-course", auth, isInstructor, editCourse);
+
+// Get courses by instructor
+router.get(
+  "/get-courses-by-instructor",
+  auth,
+  isInstructor,
+  getCoursesByInstructor
+);
+
+// Delete course can only be done by the instructor
+router.delete("/delete-course/:courseID", auth, isInstructor, deleteCourse);
 
 // Get all registered courses
 router.get("/get-all-courses", showAllCourses);

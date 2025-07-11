@@ -92,16 +92,15 @@ async function testMails() {
 }
 // testMails();
 
-const textS3Upload = async () => {
+const testS3Upload = async () => {
   const { url, key } = await putObject("one", "video/*", "courses");
   console.log(url);
   console.log("\n \n \t KEY: ", key);
 };
-// textS3Upload();
+// testS3Upload();
 
-const textS3Presigned = async () => {
+const testS3Presigned = async () => {
   const url = await getObjectURL("uploads/courses/1733830753374");
   console.log("Get URL: ", url);
 };
-
-// textS3Presigned();
+// testS3Presigned();

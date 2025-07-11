@@ -4,12 +4,13 @@ const {
   arrayDataSchema,
   statusSchema,
   titleSchema,
-  fileKey,
+  fileKeySchema,
+  idSchema,
 } = require("./General.validation");
 
 const createCourseSchema = Joi.object({
   title: titleSchema,
-  fileKey: fileKey,
+  fileKey: fileKeySchema,
   description: descriptionSchema,
   price: Joi.number().positive().required(),
   language: Joi.string().required(),
@@ -19,6 +20,20 @@ const createCourseSchema = Joi.object({
   status: statusSchema,
 });
 
+const updateCourseSchema = Joi.object({
+  courseID: idSchema.required(), // required
+  status: statusSchema.required(), // required
+  title: titleSchema.optional(),
+  fileKey: fileKeySchema.optional(),
+  description: descriptionSchema.optional(),
+  price: Joi.number().positive().optional(),
+  language: Joi.string().optional(),
+  category: Joi.string().optional(),
+  keyFeatures: arrayDataSchema.optional(),
+  tags: arrayDataSchema.optional(),
+});
+
 module.exports = {
   createCourseSchema,
+  updateCourseSchema,
 };

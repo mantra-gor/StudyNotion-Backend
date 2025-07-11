@@ -4,12 +4,15 @@ const {
   titleSchema,
   descriptionSchema,
   timeSchema,
+  fileKeySchema,
 } = require("./General.validation");
 
 const createSubSectionSchema = Joi.object({
   sectionID: idSchema,
   title: titleSchema,
   description: descriptionSchema,
+  fileKey: fileKeySchema,
+  videoFile: fileKeySchema,
   // duration: timeSchema,
 });
 
@@ -19,6 +22,7 @@ const deleteSubSectionSchema = Joi.object({
 });
 
 const updateSubSectionSchema = Joi.object({
+  sectionID: idSchema,
   subSectionID: idSchema,
   title: titleSchema.optional(),
   description: descriptionSchema.optional(),

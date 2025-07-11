@@ -41,7 +41,7 @@ async function deleteSingleObject(key) {
     Bucket: S3_BUCKET_NAME,
     Key: key,
   });
-  await client.send(command);
+  return await client.send(command);
 }
 
 async function deleteMultipleObject(keys) {
