@@ -43,6 +43,8 @@ app.use(limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+// multer middleware
+// express-fileupload middleware
 app.use(fileUpload({ useTempFiles: true, tempFileDir: "/tmp/" }));
 app.use(express.static(path.join(__dirname, "documentation")));
 
@@ -55,13 +57,15 @@ const profileRoutes = require("./routes/Profile.routes.js");
 const generalRoutes = require("./routes/General.routes.js");
 // const paymentRoutes = require("./routes/Payment.routes.js");
 const courseRoutes = require("./routes/Course.routes.js");
-const defaultRoutes = require("./routes/Default.routes.js");
+const awsServicesRoutes = require("./routes/Aws.routes.js");
+// const defaultRoutes = require("./routes/Default.routes.js");
 
 app.use("/", defaultRoutes);
 app.use("/api/v1", generalRoutes);
 app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/course", courseRoutes);
+app.use("/api/v1/aws-services", awsServicesRoutes);
 // app.use("/api/v1/payment", paymentRoutes);
 
 // activate the server
@@ -74,6 +78,7 @@ const mailSender = require("./utils/mailSender.utils.js");
 const {
   updatePassword,
 } = require("./emails/templates/passwordUpdated.email.js");
+const { initS3, putObject, getObjectURL } = require("./utils/s3.utils.js");
 
 async function testMails() {
   const title = "Your password is changed successfully";
@@ -82,3 +87,16 @@ async function testMails() {
   await mailSender(email, title, body);
 }
 // testMails();
+
+const testS3Upload = async () => {
+  const { url, key } = await putObject("one", "video/*", "courses");
+  console.log(url);
+  console.log("\n \n \t KEY: ", key);
+};
+// testS3Upload();
+
+const testS3Presigned = async () => {
+  const url = await getObjectURL("uploads/courses/1733830753374");
+  console.log("Get URL: ", url);
+};
+// testS3Presigned();

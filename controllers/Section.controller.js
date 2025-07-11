@@ -6,7 +6,9 @@ const {
   deleteSectionSchema,
   updateSectionSchema,
 } = require("../validations/Section.validate.js");
+const deleteSectionWithSubsections = require("../helpers/deleteSectionWithSubsections.js");
 
+// create section
 exports.createSection = async (req, res) => {
   try {
     // validate the data using joi
@@ -52,6 +54,7 @@ exports.createSection = async (req, res) => {
   }
 };
 
+// update section
 exports.updateSection = async (req, res) => {
   try {
     const { error, value } = updateSectionSchema.validate(req.body);
@@ -65,12 +68,13 @@ exports.updateSection = async (req, res) => {
     // update data in db
     await Section.findByIdAndUpdate(sectionID, { sectionName }, { new: true });
 
-    const course = await Course.findById(courseID)
-      .populate("courseContent")
-      .populate({
-        path: "courseContent.subSection",
+    const course = await Course.findById(courseID).populate({
+      path: "courseContent",
+      populate: {
+        path: "subSection",
         model: "SubSection",
-      });
+      },
+    });
 
     // return response
     return res.status(200).json({
@@ -100,12 +104,13 @@ exports.deleteSection = async (req, res) => {
     const { sectionID, courseID } = value;
     const instructorId = req.user.id;
 
-    const course = await Course.findById(courseID)
-      .populate("courseContent")
-      .populate({
-        path: "courseContent.subSection",
+    const course = await Course.findById(courseID).populate({
+      path: "courseContent",
+      populate: {
+        path: "subSection",
         model: "SubSection",
-      });
+      },
+    });
 
     if (!course) {
       return res.status(404).json({
@@ -122,18 +127,18 @@ exports.deleteSection = async (req, res) => {
       });
     }
 
-    // delete the section from db
-    const sectionDetails = await Section.findOneAndDelete({ _id: sectionID });
-    if (!sectionDetails) {
+    // used helper function to delete section with subsections
+    const result = await deleteSectionWithSubsections(sectionID);
+    if (result?.success === false) {
       return res.status(404).json({
         success: false,
-        message: "Section not found",
+        message: result.message || "Something went wrong",
       });
     }
 
     // deleting section from course schema
     course.courseContent = course.courseContent.filter(
-      (item) => String(item._id) !== sectionID
+      (section) => String(section._id) !== sectionID
     );
 
     // save updated course to db

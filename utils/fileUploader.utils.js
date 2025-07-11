@@ -1,5 +1,6 @@
 const cloudinary = require("cloudinary").v2;
 
+//! cloudinary utility -- have to remove when migration to s3 completed
 exports.fileUploader = async (file, folder, height, quality) => {
   const options = { folder, resource_type: "auto" };
   if (height) {
