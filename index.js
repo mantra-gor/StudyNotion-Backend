@@ -57,10 +57,10 @@ const profileRoutes = require("./routes/Profile.routes.js");
 const generalRoutes = require("./routes/General.routes.js");
 // const paymentRoutes = require("./routes/Payment.routes.js");
 const courseRoutes = require("./routes/Course.routes.js");
-const awsServicesRoutes = require("./routes/Aws.routes.js");
-// const defaultRoutes = require("./routes/Default.routes.js");
+const awsServicesRoutes = require("./routes/AmazonWebServices.routes.js");
+const defaultRoutes = require("./routes/Default.routes.js");
 
-app.use("/", defaultRoutes);
+// app.use("/", defaultRoutes);
 app.use("/api/v1", generalRoutes);
 app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/profile", profileRoutes);
