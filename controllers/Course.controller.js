@@ -338,34 +338,45 @@ exports.showAllCourses = async (_, res) => {
 // get all details of course
 exports.getCourseDetails = async (req, res) => {
   try {
+    // get user role
+    const { accountType } = req.user;
+
     // get the data validated using Joi
-    const { error, value } = idSchema.validate(req.body);
+    const { error, value } = idSchema.validate(req.params.courseID);
     if (error) {
       return res.status(400).json(JoiErrorHandler(error));
     }
-
-    // fetch data
-    const { courseID } = value;
+    const courseID = value;
 
     // getting and validating the data from db
-    const courseDetails = await Course.findById(courseID)
-      .populate({
-        path: "instructor",
-        select: "-password -courseProgress -email",
-        populate: [{ path: "additionalDetails" }, { path: "courses" }],
-      })
-      .populate({ path: "courseContent", populate: { path: "subSection" } })
-      .populate("ratingsAndReviews")
-      .populate({ path: "category", select: "name description" })
-      .populate({
-        path: "studentsEnrolled",
-        select: "-password -email",
-        populate: [
-          { path: "additionalDetails" },
-          { path: "courses" },
-          { path: "courseProgress" },
-        ],
-      });
+    let courseDetails;
+
+    if (accountType === USER_ROLES.INSTRUCTOR) {
+      courseDetails = await Course.findById(courseID)
+        .populate({ path: "courseContent", populate: { path: "subSection" } })
+        .populate("ratingsAndReviews")
+        .populate({ path: "category", select: "name description" })
+        .populate({
+          path: "studentsEnrolled",
+          select: "-password -email",
+          populate: [
+            { path: "additionalDetails" },
+            { path: "courses" },
+            { path: "courseProgress" },
+          ],
+        });
+    }
+    if (accountType === USER_ROLES.STUDENT) {
+      courseDetails = await Course.findById(courseID)
+        .populate({
+          path: "instructor",
+          select: "-password -courseProgress -email",
+          populate: [{ path: "additionalDetails" }, { path: "courses" }],
+        })
+        .populate({ path: "courseContent", populate: { path: "subSection" } })
+        .populate("ratingsAndReviews")
+        .populate({ path: "category", select: "name description" });
+    }
 
     if (!courseDetails) {
       return res.status(404).json({
@@ -375,13 +386,13 @@ exports.getCourseDetails = async (req, res) => {
     }
 
     // get object url of thumbnail and add it into the courseDetails
-    courseDetails.thumbnailUrl = await getObjectURL(
-      courseDetails.thumbnailInfo.key
-    );
+    // courseDetails.thumbnailUrl = await getObjectURL(
+    //   courseDetails.thumbnailInfo.key
+    // );
 
     // return response
     return res.status(200).json({
-      success: false,
+      success: true,
       message: "Course details fetched successfully",
       data: courseDetails,
     });

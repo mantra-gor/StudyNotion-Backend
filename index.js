@@ -61,12 +61,12 @@ const awsServicesRoutes = require("./routes/AmazonWebServices.routes.js");
 const defaultRoutes = require("./routes/Default.routes.js");
 
 // app.use("/", defaultRoutes);
-app.use("/api/v1", generalRoutes);
-app.use("/api/v1/auth", userRoutes);
-app.use("/api/v1/profile", profileRoutes);
-app.use("/api/v1/course", courseRoutes);
-app.use("/api/v1/aws-services", awsServicesRoutes);
-// app.use("/api/v1/payment", paymentRoutes);
+app.use("/v1", generalRoutes);
+app.use("/v1/auth", userRoutes);
+app.use("/v1/profile", profileRoutes);
+app.use("/v1/course", courseRoutes);
+app.use("/v1/aws-services", awsServicesRoutes);
+// app.use("/v1/payment", paymentRoutes);
 
 // activate the server
 app.listen(port, () => {
