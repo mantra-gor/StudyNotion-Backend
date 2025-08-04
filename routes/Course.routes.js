@@ -48,6 +48,7 @@ const {
   isStudent,
   isAdmin,
   isInstructor,
+  optionalAuth,
 } = require("../middlewares/Auth.middleware.js");
 
 // ********************************************************************************************************
@@ -83,7 +84,7 @@ router.delete("/delete-course/:courseID", auth, isInstructor, deleteCourse);
 router.get("/get-all-courses", showAllCourses);
 
 // Get All details of a course
-router.get("/get-course-details/:courseID", auth, getCourseDetails);
+router.get("/get-course-details/:courseID", optionalAuth, getCourseDetails);
 
 // ********************************************************************************************************
 //?                                              CATEGORY ROUTES

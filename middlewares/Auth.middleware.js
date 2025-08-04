@@ -43,6 +43,45 @@ exports.auth = async (req, res, next) => {
   }
 };
 
+// optional auth
+exports.optionalAuth = async (req, res, next) => {
+  try {
+    const token = req.header("Authorization")?.replace("Bearer ", "");
+    if (!token) {
+      next();
+      return;
+    }
+    try {
+      const payloadData = jwt.verify(
+        token,
+        process.env.JWT_ACCESS_TOKEN_SECRET
+      );
+      req.user = payloadData;
+    } catch (error) {
+      console.error(error, "JWT_ERROR");
+      return res.status(401).json({
+        success: false,
+        message: "Token can not be verified, token maybe expired.",
+        error: error.message,
+      });
+    }
+    if (req.user.isDeleted) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "You are forbidden for this action .Your account is in deletion process. If you want to retrive your account, please go to login page.",
+      });
+    }
+    next();
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while authentication",
+      error: error.message,
+    });
+  }
+};
+
 // isDeleted
 exports.isDeleted = async (req, res, next) => {
   try {

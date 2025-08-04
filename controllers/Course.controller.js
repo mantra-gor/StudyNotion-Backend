@@ -384,7 +384,7 @@ exports.showAllCourses = async (_, res) => {
 exports.getCourseDetails = async (req, res) => {
   try {
     // get user role
-    const { accountType } = req.user;
+    const accountType = req?.user?.accountType;
 
     // get the data validated using Joi
     const { error, value } = idSchema.validate(req.params.courseID);
@@ -411,15 +411,17 @@ exports.getCourseDetails = async (req, res) => {
           select: "-password -email",
           populate: [{ path: "additionalDetails" }, { path: "courses" }],
         });
-    }
-    if (accountType === USER_ROLES.STUDENT) {
+    } else {
       courseDetails = await Course.findById(courseID)
         .populate({
           path: "instructor",
           select: "-password -courseProgress -email",
           populate: [{ path: "additionalDetails" }, { path: "courses" }],
         })
-        .populate({ path: "courseContent", populate: { path: "subSection" } })
+        .populate({
+          path: "courseContent",
+          populate: { path: "subSection", select: "-videoInfo" },
+        })
         .populate("ratingsAndReviews")
         .populate({ path: "category", select: "name description" });
     }
