@@ -10,7 +10,61 @@ const {
 const JoiErrorHandler = require("../utils/errorHandler.utils.js");
 const {
   updateProfileSchema,
+  profilePictureSchema,
 } = require("../validations/Profile.validations.js");
+const { extractS3Key, deleteSingleObject } = require("../utils/s3.utils.js");
+
+exports.updateProfilePicture = async (req, res) => {
+  try {
+    const { error, value } = profilePictureSchema.validate(req.body);
+
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error || result.error));
+    }
+
+    const { objectUrl } = value;
+    const userID = req.user.id;
+
+    if (!objectUrl) {
+      return res.status(400).json({
+        success: false,
+        message: "Profile picture is required!",
+      });
+    }
+
+    // get the user from db
+    const user = await User.findById(userID).select("-password");
+
+    // remove the older one from s3 bucket
+    const fileKey = extractS3Key(user.avatar);
+    if (fileKey) {
+      await deleteSingleObject(fileKey);
+    }
+
+    // update new profile picture to the profile of user
+    user.avatar = objectUrl;
+    await user.save();
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile picture has been updated successfully.",
+      data: user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong while updating profile picture.",
+      error: error.message,
+    });
+  }
+};
 
 exports.updateProfile = async (req, res) => {
   try {
@@ -27,7 +81,7 @@ exports.updateProfile = async (req, res) => {
     // get the data which user wants to update
     const updateDetails = {};
     if (gender) updateDetails.gender = gender;
-    if (dob) updateDetails.dob = moment(dob).format("DD-MM-YYYY");
+    if (dob) updateDetails.dob = moment(dob);
     if (about) updateDetails.about = about;
     if (phoneNo) updateDetails.phoneNo = phoneNo;
 

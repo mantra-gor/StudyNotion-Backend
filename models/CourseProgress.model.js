@@ -13,7 +13,6 @@ const courseProgressSchema = new mongoose.Schema(
       },
     ],
   },
-
   { timestamps: true }
 );
 

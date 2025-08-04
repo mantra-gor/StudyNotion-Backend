@@ -30,6 +30,11 @@ exports.createS3PutObjectUrl = async (req, res) => {
         isPublic = true;
         break;
 
+      case "profile-picture":
+        folder = "users/profile-picture";
+        isPublic = true;
+        break;
+
       default:
         throw new Error("Asset Type is required.");
     }

@@ -4,6 +4,7 @@ const {
   descriptionSchema,
   phoneNumberSchema,
   dobSchema,
+  s3ObjectUrlSchema,
 } = require("./General.validation");
 
 const updateProfileSchema = Joi.object({
@@ -13,6 +14,11 @@ const updateProfileSchema = Joi.object({
   phoneNo: phoneNumberSchema,
 });
 
+const profilePictureSchema = Joi.object({
+  objectUrl: s3ObjectUrlSchema,
+});
+
 module.exports = {
   updateProfileSchema,
+  profilePictureSchema,
 };

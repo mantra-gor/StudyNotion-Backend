@@ -55,7 +55,7 @@ cloudinaryConnect();
 const userRoutes = require("./routes/User.routes.js");
 const profileRoutes = require("./routes/Profile.routes.js");
 const generalRoutes = require("./routes/General.routes.js");
-// const paymentRoutes = require("./routes/Payment.routes.js");
+const paymentRoutes = require("./routes/Payment.routes.js");
 const courseRoutes = require("./routes/Course.routes.js");
 const awsServicesRoutes = require("./routes/AmazonWebServices.routes.js");
 const defaultRoutes = require("./routes/Default.routes.js");
@@ -66,37 +66,9 @@ app.use("/v1/auth", userRoutes);
 app.use("/v1/profile", profileRoutes);
 app.use("/v1/course", courseRoutes);
 app.use("/v1/aws-services", awsServicesRoutes);
-// app.use("/v1/payment", paymentRoutes);
+app.use("/v1/payment", paymentRoutes);
 
 // activate the server
 app.listen(port, () => {
   console.log("\nServer started successfully! at PORT: ", port);
 });
-
-//! (TESTING ONLY  --  REMOVE IN PRODUCTION) sending mails for testing mails
-const mailSender = require("./utils/mailSender.utils.js");
-const {
-  updatePassword,
-} = require("./emails/templates/passwordUpdated.email.js");
-const { initS3, putObject, getObjectURL } = require("./utils/s3.utils.js");
-
-async function testMails() {
-  const title = "Your password is changed successfully";
-  const email = "mantragor77@gmail.com";
-  const body = updatePassword(email, "Mantra");
-  await mailSender(email, title, body);
-}
-// testMails();
-
-const testS3Upload = async () => {
-  const { url, key } = await putObject("one", "video/*", "courses");
-  console.log(url);
-  console.log("\n \n \t KEY: ", key);
-};
-// testS3Upload();
-
-const testS3Presigned = async () => {
-  const url = await getObjectURL("uploads/courses/1733830753374");
-  console.log("Get URL: ", url);
-};
-// testS3Presigned();

@@ -87,53 +87,60 @@ exports.categoryPageDetails = async (req, res) => {
     // get caterogy id
     const { categoryId } = value;
 
-    // get courses according to course id
-    const selectedCourses = await Course.find({
-      category: { $eq: mongoose.Types.ObjectId(categoryId) },
-    });
-
-    // check weather courses availabe of the course id or not
-    if (selectedCourses === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Course not found",
-      });
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+      throw new Error("Invalid category ID");
     }
+
+    // fetch category details
+    const selectedCategory = await Category.findById(categoryId)
+      .populate({
+        path: "course",
+        match: { status: "Published" },
+        populate: [
+          { path: "instructor", select: "firstName lastName avatar" },
+          { path: "ratingsAndReviews" },
+        ],
+      })
+      .exec();
 
     // also provide other courses than the id and top 5 trending courses too
     const otherCourses = await Course.find({
-      _id: { $nin: selectedCourses.map((course) => course._id) },
+      _id: { $nin: selectedCategory.course.map((course) => course._id) },
+    }).populate({
+      path: "instructor",
+      select: "firstName lastName avatar",
     });
 
-    const trendingCourse = await Course.aggregate([
-      {
-        $match: {
-          _id: { $nin: selectedCourses.map((course) => course._id) },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          totalStudents: { $sum: "$studentsEnrolled" },
-          courses: { $push: "$$ROOT" }, // Include all fields of the course document
-        },
-      },
-      {
-        $sort: { totalStudents: 1 },
-      },
-      {
-        limit: 5,
-      },
-    ]);
+    // ! ::ERROR:: Arguments must be aggregate pipeline operators
+    // const trendingCourse = await Course.aggregate([
+    //   {
+    //     $match: {
+    //       _id: { $nin: selectedCourses.map((course) => course._id) },
+    //     },
+    //   },
+    //   {
+    //     $group: {
+    //       _id: null,
+    //       totalStudents: { $sum: "$studentsEnrolled" },
+    //       courses: { $push: "$$ROOT" }, // Include all fields of the course document
+    //     },
+    //   },
+    //   {
+    //     $sort: { totalStudents: 1 },
+    //   },
+    //   {
+    //     limit: 5,
+    //   },
+    // ]);
 
     // return the response
     return res.status(200).json({
       success: true,
       message: "Courses fetched as per the category successfully",
       data: {
-        selectedCourses,
+        selectedCategory,
         otherCourses,
-        trendingCourse,
+        // trendingCourse, // Uncomment when the aggregation is fixed
       },
     });
   } catch (error) {

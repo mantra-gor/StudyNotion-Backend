@@ -56,6 +56,8 @@ const fileKeySchema = Joi.object({
   contentType: Joi.string().required(),
 }).unknown();
 
+const s3ObjectUrlSchema = Joi.string().uri();
+
 const videoFileSchema = Joi.object({
   name: Joi.string().required(),
   data: Joi.binary().required(), // Ensures `data` is a binary buffer
@@ -97,6 +99,7 @@ module.exports = {
   accountTypeSchema,
   descriptionSchema,
   phoneNumberSchema,
+  s3ObjectUrlSchema,
   passwordsSchema,
   arrayDataSchema,
   thumbnailSchema,

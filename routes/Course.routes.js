@@ -10,6 +10,7 @@ const {
   editCourse,
   getCoursesByInstructor,
   deleteCourse,
+  getEnrolledCoursesOfStudent,
 } = require("../controllers/Course.controller.js");
 
 // import category controllers
@@ -67,6 +68,14 @@ router.get(
   getCoursesByInstructor
 );
 
+// Get enrolled courses of a student
+router.get(
+  "/get-enrolled-courses",
+  auth,
+  isStudent,
+  getEnrolledCoursesOfStudent
+);
+
 // Delete course can only be done by the instructor
 router.delete("/delete-course/:courseID", auth, isInstructor, deleteCourse);
 
@@ -87,7 +96,7 @@ router.post("/create-category", auth, isAdmin, createCategory);
 router.get("/get-all-category", getAllCategories);
 
 // categoryPageDetails
-router.post("/categoryPageDetails", categoryPageDetails);
+router.post("/category-page-details", categoryPageDetails);
 
 // ********************************************************************************************************
 //?                                              SECTION ROUTES

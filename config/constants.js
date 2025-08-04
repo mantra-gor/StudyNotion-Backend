@@ -33,3 +33,8 @@ exports.S3_FOLDERS = {
   THUMBNAILS: "thumbnails",
   COURSES: "courses",
 };
+
+exports.ASSETS = {
+  LOGO_LARGE:
+    "https://res.cloudinary.com/mantra-gor/image/upload/v1719229590/StudyNotion/assets/Logo-Full-Light_ftveiv.png",
+};

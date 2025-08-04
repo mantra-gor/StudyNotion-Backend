@@ -6,6 +6,7 @@ const {
 } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const client = require("../config/aws.config");
+const { URL } = require("url");
 
 const { S3_BUCKET_NAME, AWS_S3_REGION } = process.env;
 
@@ -66,9 +67,44 @@ function keyGenerator(filename, folder) {
   return `uploads/${folder}/${sanitizedBaseName}-${timestamp}.${extension}`;
 }
 
+/**
+ * Extracts the S3 object key from a given object URL.
+ * @param {string} objectUrl - The full S3 object URL.
+ * @returns {string|null} - The extracted key, or null if the URL is invalid.
+ */
+function extractS3Key(objectUrl) {
+  try {
+    const url = new URL(objectUrl);
+
+    // Handle path-style URLs like: https://s3.amazonaws.com/bucket-name/key
+    const pathSegments = url.pathname.split("/").filter(Boolean);
+
+    if (url.hostname === "s3.amazonaws.com" && pathSegments.length >= 2) {
+      // path-style: /bucket-name/key
+      return pathSegments.slice(1).join("/");
+    }
+
+    // Handle virtual-hosted-style URLs: https://bucket-name.s3.amazonaws.com/key
+    const hostParts = url.hostname.split(".");
+    const isVirtualHosted = hostParts.length > 3 && hostParts[1] === "s3";
+
+    if (isVirtualHosted) {
+      // pathname starts with /key
+      return decodeURIComponent(url.pathname.slice(1)); // remove leading '/'
+    }
+
+    // Other custom endpoint cases (like localstack)
+    return decodeURIComponent(url.pathname.slice(1));
+  } catch (err) {
+    console.error("Invalid URL:", err.message);
+    return null;
+  }
+}
+
 module.exports = {
-  getObjectURL,
   putObject,
+  getObjectURL,
+  extractS3Key,
   deleteSingleObject,
   deleteMultipleObject,
 };

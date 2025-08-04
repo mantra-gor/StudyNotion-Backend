@@ -307,6 +307,51 @@ exports.getCoursesByInstructor = async (req, res) => {
     });
   }
 };
+
+// get all courses enrolled by student handler function
+exports.getEnrolledCoursesOfStudent = async (req, res) => {
+  try {
+    const studentID = req.user.id;
+    if (!studentID) {
+      return res.status(400).json({
+        success: false,
+        message: "Student ID is required",
+      });
+    }
+
+    // get the courses of this student
+    const coursesEnrolledByStudent = await User.findById({ _id: studentID })
+      .select("courses courseProgress")
+      .populate({
+        path: "courses",
+        select: "-status -studentsEnrolled",
+      });
+
+    if (
+      !coursesEnrolledByStudent ||
+      coursesEnrolledByStudent.courses.length === 0
+    ) {
+      return res.status(404).json({
+        success: false,
+        message: "No courses found for this student",
+      });
+    }
+
+    // return the response
+    return res.status(200).json({
+      success: true,
+      message: "Courses fetched successfully",
+      data: coursesEnrolledByStudent,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while fetching your courses.",
+      error: error.message,
+    });
+  }
+};
+
 // show all courses handler function
 exports.showAllCourses = async (_, res) => {
   try {
@@ -357,13 +402,14 @@ exports.getCourseDetails = async (req, res) => {
         .populate("ratingsAndReviews")
         .populate({ path: "category", select: "name description" })
         .populate({
+          path: "instructor",
+          select: "-password -courseProgress -email",
+          populate: [{ path: "additionalDetails" }, { path: "courses" }],
+        })
+        .populate({
           path: "studentsEnrolled",
           select: "-password -email",
-          populate: [
-            { path: "additionalDetails" },
-            { path: "courses" },
-            { path: "courseProgress" },
-          ],
+          populate: [{ path: "additionalDetails" }, { path: "courses" }],
         });
     }
     if (accountType === USER_ROLES.STUDENT) {
@@ -384,11 +430,6 @@ exports.getCourseDetails = async (req, res) => {
         message: "Course not found",
       });
     }
-
-    // get object url of thumbnail and add it into the courseDetails
-    // courseDetails.thumbnailUrl = await getObjectURL(
-    //   courseDetails.thumbnailInfo.key
-    // );
 
     // return response
     return res.status(200).json({
