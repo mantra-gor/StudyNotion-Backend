@@ -10,6 +10,7 @@ const {
 const {
   paymentSuccess,
 } = require("../emails/templates/paymentSuccess.email.js");
+const { log } = require("console");
 
 // capture the payment and initiate the razorpay order
 exports.capturePayment = async (req, res) => {
@@ -43,8 +44,11 @@ exports.capturePayment = async (req, res) => {
             message: "Course not found.",
           });
 
+        // if the course is already purchased by the student then do not add
         const uid = new mongoose.Types.ObjectId(userId);
-        const isAlreadyPurchased = course.studentsEnrolled.includes(uid);
+        const isAlreadyPurchased = course.studentsEnrolled.some((studentID) =>
+          studentID.equals(uid)
+        );
         if (isAlreadyPurchased) {
           return res.status(400).json({
             success: false,
@@ -53,7 +57,13 @@ exports.capturePayment = async (req, res) => {
         }
 
         totalAmount += course.price;
-      } catch (error) {}
+      } catch (error) {
+        return res.status(500).json({
+          success: false,
+          message: "Something went wrong while fetching courses of your order.",
+          error: error.message,
+        });
+      }
     }
 
     const options = {
@@ -170,7 +180,10 @@ exports.sendPaymentSuccessMail = async (req, res) => {
 };
 
 const enrollStudents = async (courses, userID, res) => {
+  const session = await mongoose.startSession();
   try {
+    session.startTransaction();
+
     // validate data
     if (!courses || !userID) {
       return res.status(404).json({
@@ -179,43 +192,53 @@ const enrollStudents = async (courses, userID, res) => {
       });
     }
 
+    const enrolledStudent = await User.findById(userID).session(session);
+    if (!enrolledStudent) {
+      throw new Error("Student not found");
+    }
+
+    const successfullyEnrolledCourses = [];
+
     for (const courseID of courses) {
-      // find the course and enroll the student to the course
-      const enrolledCourse = await Course.findOneAndUpdate(
-        { _id: courseID },
-        { $push: { studentsEnrolled: userID } },
-        { new: true }
-      );
-
+      const enrolledCourse = await Course.findById(courseID).session(session);
       if (!enrolledCourse) {
-        return res.status(500).json({
-          success: false,
-          message: "Something went wrong! Bad Gateway",
-        });
+        throw new Error("Course not found");
       }
 
-      // update the student schema
-      const enrolledStudent = await User.findOneAndUpdate(
-        { _id: userID },
-        { $push: { courses: courseID } },
-        { new: true }
+      const isAlreadyPurchased = enrolledCourse.studentsEnrolled.some(
+        (studentID) => studentID.equals(userID)
       );
 
-      if (!enrolledStudent) {
-        return res.status(500).json({
-          success: false,
-          message: "Failed to update student courses",
-        });
+      if (isAlreadyPurchased) {
+        console.log("Already enrolled:", enrolledCourse.title);
+        continue;
       }
 
-      // send mail to the user for successful enrollment in course
+      // update user and course
+      enrolledStudent.courses.push(courseID);
+      enrolledCourse.studentsEnrolled.push(userID);
+
+      await enrolledCourse.save({ session });
+      successfullyEnrolledCourses.push(enrolledCourse);
+    }
+
+    await enrolledStudent.save({ session });
+
+    // All done, now commit
+    await session.commitTransaction();
+    session.endSession();
+
+    // Now send emails
+    for (const course of successfullyEnrolledCourses) {
       const title = "Congratulations on Your Enrollment!";
       const name = enrolledStudent.firstName + " " + enrolledStudent.lastName;
-      const body = courseEnrollmentSuccess(name, courseName);
+      const body = courseEnrollmentSuccess(name, course.title);
       await mailSender(enrolledStudent.email, title, body);
     }
   } catch (error) {
-    console.error("Error enrolling students:", error);
+    await session.abortTransaction();
+    session.endSession();
+    console.error("Error enrolling student:", error);
     throw new Error("Failed to enroll students");
   }
 };
