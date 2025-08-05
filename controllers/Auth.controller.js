@@ -337,8 +337,8 @@ exports.getUser = async (req, res) => {
   try {
     const userId = req.user.id;
     const userData = await User.findById({ _id: userId })
-      .populate({ path: "additionalDetails", select: "-_id" })
-      .select("-password -_id");
+      .populate({ path: "additionalDetails" })
+      .select("-password");
 
     // validate the user
     if (!userData) {
