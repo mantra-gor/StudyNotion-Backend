@@ -6,8 +6,9 @@ const {
   createSubSectionSchema,
   updateSubSectionSchema,
   deleteSubSectionSchema,
+  generateLecturePresignedUrlSchema,
 } = require("../validations/SubSection.validation.js");
-const { deleteSingleObject } = require("../utils/s3.utils.js");
+const { deleteSingleObject, getPresignedURL } = require("../utils/s3.utils.js");
 require("dotenv").config();
 
 // create subsection
@@ -207,6 +208,71 @@ exports.deleteSubSection = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Something went wrong while deleting sub section",
+      error: error.message,
+    });
+  }
+};
+
+// get presigned url for a video --> here time for the url is 30 minutes
+exports.generateLecturePresignedUrl = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const urlValidTime = 1800; // 30 minutes
+
+    const { error, value } = generateLecturePresignedUrlSchema.validate(
+      req.body
+    );
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
+    }
+
+    const { videoKey, courseID } = value;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "Please login to access course content.",
+      });
+    }
+
+    if (!videoKey) {
+      return res.status(400).json({
+        success: false,
+        message: "Video key is invalid.",
+      });
+    }
+
+    const course = await Course.findById(courseID);
+
+    const isEnrolled = course.studentsEnrolled.some(
+      (studentID) => studentID.toString() === userId.toString()
+    );
+
+    if (!isEnrolled) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized. Please enroll to the course.",
+      });
+    }
+
+    const presignedUrl = await getPresignedURL(videoKey, urlValidTime);
+
+    if (!presignedUrl) {
+      return res.status(400).json({
+        success: false,
+        message: "Something went wrong while fetching video file.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Video fetched successfully.",
+      data: presignedUrl,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while fetching video file.",
       error: error.message,
     });
   }

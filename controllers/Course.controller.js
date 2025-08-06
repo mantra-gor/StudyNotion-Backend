@@ -2,25 +2,14 @@ const Course = require("../models/Courses.model.js");
 const Category = require("../models/Category.model.js");
 const User = require("../models/User.model.js");
 const deleteSectionWithSubsections = require("../helpers/deleteSectionWithSubsections");
-const { fileUploader } = require("../utils/fileUploader.utils.js");
 const { USER_ROLES } = require("../config/constants.js");
 const {
   createCourseSchema,
   updateCourseSchema,
 } = require("../validations/Course.validations.js");
 const JoiErrorHandler = require("../utils/errorHandler.utils.js");
-const {
-  thumbnailSchema,
-  idSchema,
-  fileMetadataSchema,
-} = require("../validations/General.validation.js");
-const {
-  putObject,
-  getObjectURL,
-  deleteMultipleObject,
-  deleteSingleObject,
-} = require("../utils/s3.utils.js");
-const e = require("express");
+const { idSchema } = require("../validations/General.validation.js");
+const { deleteSingleObject } = require("../utils/s3.utils.js");
 const RatingsAndReviews = require("../models/RatingsAndReviews.model.js");
 require("dotenv").config();
 
@@ -325,6 +314,7 @@ exports.getEnrolledCoursesOfStudent = async (req, res) => {
       .populate({
         path: "courses",
         select: "-status -studentsEnrolled",
+        populate: { path: "courseContent" },
       });
 
     if (
@@ -443,6 +433,69 @@ exports.getCourseDetails = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Something went wrong while fetching course details",
+      error: error.message,
+    });
+  }
+};
+
+// Get course data with video content
+exports.getAuthorizedCourseContent = async (req, res) => {
+  try {
+    // get the user
+    const userId = req.user.id;
+
+    if (!userId) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
+    // get the data validated using Joi
+    const { error, value } = idSchema.validate(req.params.courseID);
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
+    }
+    const courseID = value;
+
+    const courseData = await Course.findById(courseID).populate({
+      path: "courseContent",
+      populate: { path: "subSection" },
+    });
+
+    if (!courseData) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
+    }
+
+    // Check if student is enrolled
+    const isEnrolled = courseData.studentsEnrolled.some(
+      (studentID) => studentID.toString() === userId.toString()
+    );
+
+    if (!isEnrolled) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized! Please purchase the course.",
+      });
+    }
+
+    // remove the students enrolled array
+    const courseObject = courseData.toObject();
+    delete courseObject.studentsEnrolled;
+
+    // return the success response
+    return res.status(200).json({
+      success: true,
+      message: "Course data fetched successfully!",
+      data: courseObject,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while fetching your course data",
       error: error.message,
     });
   }

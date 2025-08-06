@@ -29,8 +29,14 @@ const updateSubSectionSchema = Joi.object({
   duration: timeSchema.optional(),
 });
 
+const generateLecturePresignedUrlSchema = Joi.object({
+  videoKey: Joi.string().required(),
+  courseID: idSchema,
+});
+
 module.exports = {
   createSubSectionSchema,
   deleteSubSectionSchema,
   updateSubSectionSchema,
+  generateLecturePresignedUrlSchema,
 };

@@ -1,5 +1,5 @@
 const JoiErrorHandler = require("../utils/errorHandler.utils.js");
-const { putObject, getObjectURL } = require("../utils/s3.utils.js");
+const { putObject, getPresignedURL } = require("../utils/s3.utils.js");
 const {
   generatePutObjectURLSchema,
 } = require("../validations/AwsServices.validation.js");

@@ -10,12 +10,12 @@ const { URL } = require("url");
 
 const { S3_BUCKET_NAME, AWS_S3_REGION } = process.env;
 
-async function getObjectURL(key) {
+async function getPresignedURL(key, expiresIn = 300) {
   const command = new GetObjectCommand({
     Bucket: S3_BUCKET_NAME,
     Key: key,
   });
-  const url = await getSignedUrl(client, command, { expiresIn: 300 });
+  const url = await getSignedUrl(client, command, { expiresIn });
   return url;
 }
 
@@ -103,7 +103,7 @@ function extractS3Key(objectUrl) {
 
 module.exports = {
   putObject,
-  getObjectURL,
+  getPresignedURL,
   extractS3Key,
   deleteSingleObject,
   deleteMultipleObject,

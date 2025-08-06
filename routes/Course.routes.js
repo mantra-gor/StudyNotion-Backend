@@ -11,6 +11,7 @@ const {
   getCoursesByInstructor,
   deleteCourse,
   getEnrolledCoursesOfStudent,
+  getAuthorizedCourseContent,
 } = require("../controllers/Course.controller.js");
 
 // import category controllers
@@ -32,6 +33,7 @@ const {
   createSubSection,
   updateSubSection,
   deleteSubSection,
+  generateLecturePresignedUrl,
 } = require("../controllers/SubSection.controller.js");
 
 // import rating and review controllers
@@ -86,6 +88,14 @@ router.get("/get-all-courses", showAllCourses);
 // Get All details of a course
 router.get("/get-course-details/:courseID", optionalAuth, getCourseDetails);
 
+// Get course data with video content only accessible by student enrolled
+router.get(
+  "/get-authorized-course-content/:courseID",
+  auth,
+  isStudent,
+  getAuthorizedCourseContent
+);
+
 // ********************************************************************************************************
 //?                                              CATEGORY ROUTES
 // ********************************************************************************************************
@@ -124,6 +134,14 @@ router.put("/update-subsection", auth, isInstructor, updateSubSection);
 
 // subsection can only be deleted by instructor
 router.delete("/delete-subsection", auth, isInstructor, deleteSubSection);
+
+// get a presigned url of a lecture only by student
+router.post(
+  "/generate-lecture-url",
+  auth,
+  isStudent,
+  generateLecturePresignedUrl
+);
 
 // ********************************************************************************************************
 //?                                            RATING AND REVIEW ROUTES
