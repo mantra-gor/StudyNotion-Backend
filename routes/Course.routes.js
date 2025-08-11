@@ -42,6 +42,7 @@ const {
   getAverageRating,
   getRatingsAndReviews,
   getAllRatingsAndReviews,
+  getMyRatingsAndReview,
 } = require("../controllers/RatingsAndReview.controller.js");
 
 // import middlewares
@@ -148,7 +149,10 @@ router.post(
 // ********************************************************************************************************
 
 // rating and review can only be done by students
-router.post("/createRatingAndReview", auth, isStudent, createRatingAndReview);
+router.post("/review-course", auth, isStudent, createRatingAndReview);
+
+// get student specific rating and review
+router.post("/my-review", auth, isStudent, getMyRatingsAndReview);
 
 // average rating can be access by anyone
 router.post("/averageRating", getAverageRating);

@@ -214,7 +214,46 @@ exports.getAllRatingsAndReviews = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Something went wrong while getting all rating and reviews",
+      message: "Something went wrong while getting all ratings and reviews",
+      error: error.message,
+    });
+  }
+};
+
+// get the user specific rating
+exports.getMyRatingsAndReview = async (req, res) => {
+  try {
+    const userID = req.user.id;
+    const { error, value } = idSchema.validate(req.body.courseID);
+
+    if (error) {
+      return res.status(400).json(JoiErrorHandler(error));
+    }
+
+    const courseID = value;
+
+    const reviewData = await RatingsAndReview.findOne({
+      user: { $in: [userID] },
+      course: { $in: [courseID] },
+    });
+
+    if (!reviewData) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "No rating or review found from this user for the selected course.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Data found successfully!",
+      data: reviewData,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while getting your ratings and reviews",
       error: error.message,
     });
   }
