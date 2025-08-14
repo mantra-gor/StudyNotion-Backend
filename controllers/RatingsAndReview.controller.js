@@ -190,21 +190,21 @@ exports.getAllRatingsAndReviews = async (req, res) => {
   try {
     // get all data from database
     const allRatingsAndReviews = await RatingsAndReview.find({
-      rating: true,
-      review: true,
-      user: true,
-      course: true,
+      rating: { $exists: true },
+      review: { $exists: true, $ne: "" }, // not empty
+      user: { $exists: true },
+      course: { $exists: true },
     })
       .sort({ rating: 1 })
       .populate({
-        path: "User",
+        path: "user",
         select: "firstName lastName avatar email",
       })
       .populate({
-        path: "Course",
+        path: "course",
         select: "title",
-      })
-      .exec();
+      });
+
     // return response
     return res.status(200).json({
       success: true,

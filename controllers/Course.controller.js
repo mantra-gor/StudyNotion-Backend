@@ -311,6 +311,7 @@ exports.getEnrolledCoursesOfStudent = async (req, res) => {
     // get the courses of this student
     const coursesEnrolledByStudent = await User.findById({ _id: studentID })
       .select("courses courseProgress")
+      .populate("courseProgress")
       .populate({
         path: "courses",
         select: "-status -studentsEnrolled",
@@ -327,11 +328,22 @@ exports.getEnrolledCoursesOfStudent = async (req, res) => {
       });
     }
 
+    const updatedData = coursesEnrolledByStudent.courses.map((course) => {
+      const progress = coursesEnrolledByStudent.courseProgress.find(
+        (p) => p.courseID.toString() === course._id.toString()
+      );
+
+      return {
+        ...course.toObject(),
+        courseProgress: progress || null,
+      };
+    });
+
     // return the response
     return res.status(200).json({
       success: true,
       message: "Courses fetched successfully",
-      data: coursesEnrolledByStudent,
+      data: updatedData,
     });
   } catch (error) {
     return res.status(500).json({

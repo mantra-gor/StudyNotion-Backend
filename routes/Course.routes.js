@@ -45,6 +45,12 @@ const {
   getMyRatingsAndReview,
 } = require("../controllers/RatingsAndReview.controller.js");
 
+// import course progress controllers
+const {
+  updateCourseProgress,
+  getCourseProgressOfStudent,
+} = require("../controllers/CourseProgress.controller.js");
+
 // import middlewares
 const {
   auth,
@@ -161,6 +167,21 @@ router.post("/averageRating", getAverageRating);
 router.post("/getRatingsAndReviews", getRatingsAndReviews);
 
 //get all ratings and reviews of all courses
-router.get("/getAllRatingsAndReviews", getAllRatingsAndReviews);
+router.get("/get-all-ratings-and-reviews", getAllRatingsAndReviews);
+
+// ********************************************************************************************************
+//?                                                COURSE PROGRESS
+// ********************************************************************************************************
+
+// get the course progress of a specific course
+router.get(
+  "/get-course-progress/:courseID",
+  auth,
+  isStudent,
+  getCourseProgressOfStudent
+);
+
+// student will update their course progress
+router.post("/update-course-progress", auth, isStudent, updateCourseProgress);
 
 module.exports = router;

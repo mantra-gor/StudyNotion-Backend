@@ -11,6 +11,7 @@ const {
   paymentSuccess,
 } = require("../emails/templates/paymentSuccess.email.js");
 const { log } = require("console");
+const CourseProgress = require("../models/CourseProgress.model.js");
 
 // capture the payment and initiate the razorpay order
 exports.capturePayment = async (req, res) => {
@@ -214,8 +215,16 @@ const enrollStudents = async (courses, userID, res) => {
         continue;
       }
 
+      // create course progress of each course
+      const courseProgress = await CourseProgress.create({
+        courseID,
+        userID,
+        completedVideos: [],
+      });
+
       // update user and course
       enrolledStudent.courses.push(courseID);
+      enrolledStudent.courseProgress.push(courseProgress._id);
       enrolledCourse.studentsEnrolled.push(userID);
 
       await enrolledCourse.save({ session });
