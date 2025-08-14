@@ -226,3 +226,52 @@ exports.getEnrolledCourses = async (req, res) => {
     });
   }
 };
+
+exports.instructorDashboard = async (req, res) => {
+  try {
+    const instructorID = req.user.id;
+    const courseDetails = await Course.find({
+      instructor: instructorID,
+    }).populate({ path: "ratingsAndReviews" });
+    const instructorData = await User.findById(instructorID).select(
+      "-courseProgress -courses -password"
+    );
+
+    if (!instructorData || !courseDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "Data not found!",
+      });
+    }
+
+    const courseData = courseDetails.map((course) => {
+      const totalStudentsEnrolled = course.studentsEnrolled.length;
+      const totalEarnings = totalStudentsEnrolled * course.price;
+
+      // create a new object
+      return {
+        ...course.toObject(),
+        totalStudentsEnrolled,
+        totalEarnings,
+      };
+    });
+
+    const data = {
+      instructorData,
+      courseData,
+    };
+
+    // return response
+    return res.status(200).json({
+      success: true,
+      message: "Data fetched successfully.",
+      data: data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while getting courses list.",
+      error: error.message,
+    });
+  }
+};

@@ -8,10 +8,15 @@ const {
   updateProfile,
   retriveAccountRequest,
   updateProfilePicture,
+  instructorDashboard,
 } = require("../controllers/Profile.controller.js");
 
 // importing middlewares
-const { auth, isDeleted } = require("../middlewares/Auth.middleware.js");
+const {
+  auth,
+  isDeleted,
+  isInstructor,
+} = require("../middlewares/Auth.middleware.js");
 
 // ********************************************************************************************************
 //?                                            PROFILE ROUTES
@@ -28,5 +33,8 @@ router.delete("/delete-account", auth, deleteAccountRequest);
 
 // retriving the soft deleted account
 router.put("/retrive-account", isDeleted, retriveAccountRequest);
+
+// get instructor dashboard data
+router.get("/instructor-dashboard", auth, isInstructor, instructorDashboard);
 
 module.exports = router;
