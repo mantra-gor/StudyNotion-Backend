@@ -1,3 +1,4 @@
+const { ASSET_TYPES } = require("../config/constants.js");
 const JoiErrorHandler = require("../utils/errorHandler.utils.js");
 const { putObject, getPresignedURL } = require("../utils/s3.utils.js");
 const {
@@ -20,17 +21,17 @@ exports.createS3PutObjectUrl = async (req, res) => {
     let isPublic;
     let folder;
     switch (assetType) {
-      case "course":
+      case ASSET_TYPES.COURSE:
         folder = "course";
         isPublic = false;
         break;
 
-      case "thumbnail":
+      case ASSET_TYPES.THUMBNAIL:
         folder = "thumbnail";
         isPublic = true;
         break;
 
-      case "profile-picture":
+      case ASSET_TYPES.PROFILE_PICTURE:
         folder = "users/profile-picture";
         isPublic = true;
         break;

@@ -5,6 +5,15 @@ exports.USER_GENDER = {
   OTHER: "Other",
   NULL: null,
 };
+
+// Asset Types ENUMS
+exports.ASSET_TYPES = {
+  THUMBNAIL: "thumbnail",
+  COURSE: "course",
+  PROFILE_PICTURE: "profile-picture",
+};
+
+// Roles ENUMS
 exports.USER_ROLES = {
   ADMIN: "Admin",
   STUDENT: "Student",

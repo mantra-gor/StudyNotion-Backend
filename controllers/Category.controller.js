@@ -106,10 +106,12 @@ exports.categoryPageDetails = async (req, res) => {
     // also provide other courses than the id and top 5 trending courses too
     const otherCourses = await Course.find({
       _id: { $nin: selectedCategory.course.map((course) => course._id) },
-    }).populate({
-      path: "instructor",
-      select: "firstName lastName avatar",
-    });
+    })
+      .populate({
+        path: "instructor",
+        select: "firstName lastName avatar",
+      })
+      .populate("ratingsAndReviews");
 
     // ! ::ERROR:: Arguments must be aggregate pipeline operators
     // const trendingCourse = await Course.aggregate([

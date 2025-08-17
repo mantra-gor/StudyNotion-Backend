@@ -27,6 +27,7 @@ const updateSubSectionSchema = Joi.object({
   title: titleSchema.optional(),
   description: descriptionSchema.optional(),
   duration: timeSchema.optional(),
+  fileKey: fileKeySchema.optional(),
 });
 
 const generateLecturePresignedUrlSchema = Joi.object({

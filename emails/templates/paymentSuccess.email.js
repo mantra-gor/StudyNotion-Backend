@@ -7,6 +7,7 @@ exports.paymentSuccess = (
   amount
 ) => {
   const logo = ASSETS.LOGO_LARGE;
+  const amountInRupees = (amountInPaise / 100).toFixed(2);
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -56,7 +57,7 @@ exports.paymentSuccess = (
       
       <!-- Preheader text for email preview -->
       <div style="display: none; max-height: 0; overflow: hidden; font-size: 1px; line-height: 1px; color: #f8fafc;">
-        Payment successful! Amount: ₹${amount}. Your StudyNotion course access is now active.
+        Payment successful! Amount: ₹${amountInRupees}. Your StudyNotion course access is now active.
       </div>
       
       <!-- Main wrapper -->
@@ -116,7 +117,7 @@ exports.paymentSuccess = (
                     <!-- Amount paid -->
                     <div style="text-align: center; margin: 24px 0; padding: 20px; background: #ffffff; border-radius: 8px; border: 1px solid #d1fae5;">
                       <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px 0; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Amount Paid</p>
-                      <p class="amount" style="color: #22c55e; font-size: 32px; font-weight: 700; margin: 0; font-family: 'SF Mono', Monaco, monospace;">₹${amount}</p>
+                      <p class="amount" style="color: #22c55e; font-size: 32px; font-weight: 700; margin: 0; font-family: 'SF Mono', Monaco, monospace;">₹${amountInRupees}</p>
                     </div>
                     
                     <!-- Transaction details -->

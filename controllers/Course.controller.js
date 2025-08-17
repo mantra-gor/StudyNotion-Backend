@@ -122,9 +122,12 @@ exports.editCourse = async (req, res) => {
     const course = await Course.findById(courseID);
 
     // If Thumbnail Image is found, update it
-    if (value.files) {
-      console.log("thumbnail update");
-      // updated thumbnail // TODO: pending
+    if (value.fileKey) {
+      // delete the old one from s3 bucket
+      await deleteSingleObject(course.thumbnailInfo.key);
+
+      // updated thumbnail
+      course.thumbnailInfo = value.fileKey;
     }
 
     // Update only the fields that are present in the request body
@@ -401,7 +404,7 @@ exports.getCourseDetails = async (req, res) => {
     if (accountType === USER_ROLES.INSTRUCTOR) {
       courseDetails = await Course.findById(courseID)
         .populate({ path: "courseContent", populate: { path: "subSection" } })
-        .populate("ratingsAndReviews")
+        .populate({ path: "ratingsAndReviews", populate: { path: "user" } })
         .populate({ path: "category", select: "name description" })
         .populate({
           path: "instructor",
@@ -424,7 +427,7 @@ exports.getCourseDetails = async (req, res) => {
           path: "courseContent",
           populate: { path: "subSection", select: "-videoInfo" },
         })
-        .populate("ratingsAndReviews")
+        .populate({ path: "ratingsAndReviews", populate: { path: "user" } })
         .populate({ path: "category", select: "name description" });
     }
 

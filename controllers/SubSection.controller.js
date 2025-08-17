@@ -70,60 +70,31 @@ exports.createSubSection = async (req, res) => {
 exports.updateSubSection = async (req, res) => {
   try {
     const { error, value } = updateSubSectionSchema.validate(req.body);
-    // const videoFile = videoFileSchema(req.files.video);
 
     if (error) {
       return res.status(400).json(JoiErrorHandler(error));
     }
 
     // get data
-    const { sectionID, subSectionID, title, description, duration, videoFile } =
+    const { sectionID, subSectionID, title, description, duration, fileKey } =
       value;
-    // const video = videoFile.value;
+
+    const subsectiondata = await SubSection.findById(subSectionID);
 
     // getting all details what user want to update
     const updatedDetails = {};
     if (title) updatedDetails.title = title;
     if (description) updatedDetails.description = description;
     if (duration) updatedDetails.duration = description;
-
-    // if (video) {
-    //   // get the details of subsectiona and validate it
-    //   const subSectionDetails = await SubSection.findById(subSectionID);
-    //   if (!subSectionDetails) {
-    //     return res.status(404).json({
-    //       success: false,
-    //       message: "Subsection not found",
-    //     });
-    //   }
-
-    //   // delete the old video from cloudinary
-    //   const result = await deleteFile(subSectionDetails.videoUrl);
-    //   if (!result) {
-    //     return res.status(400).json({
-    //       success: false,
-    //       message: "Something went wrong",
-    //     });
-    //   }
-
-    //   // upload new video to cloudinary
-    //   const newVideoDetails = await fileUploader(
-    //     video,
-    //     process.env.FOLDER_NAME
-    //   );
-
-    //   // TODO: after updating the video ensure to delete the old video from cloud storage
-
-    //   // add new video url to updateDetails object
-    //   updatedDetails.videoUrl = newVideoDetails.secure_url;
-    // }
+    if (fileKey) {
+      await deleteSingleObject(subsectiondata.videoInfo.key);
+      updatedDetails.videoInfo = fileKey;
+    }
 
     // update data in db
-    const updatedSubSection = await SubSection.findByIdAndUpdate(
-      subSectionID,
-      updatedDetails,
-      { new: true }
-    );
+    await SubSection.findByIdAndUpdate(subSectionID, updatedDetails, {
+      new: true,
+    });
 
     const updatedSection = await Section.findById(sectionID).populate(
       "subSection"
@@ -248,7 +219,7 @@ exports.generateLecturePresignedUrl = async (req, res) => {
       (studentID) => studentID.toString() === userId.toString()
     );
 
-    if (!isEnrolled) {
+    if (!isEnrolled && !course.instructor == userId) {
       return res.status(403).json({
         success: false,
         message: "You are not authorized. Please enroll to the course.",

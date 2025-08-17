@@ -25,6 +25,7 @@ const updateCourseSchema = Joi.object({
   status: statusSchema.required(), // required
   title: titleSchema.optional(),
   fileKey: fileKeySchema.optional(),
+  courseImage: Joi.string().optional(),
   description: descriptionSchema.optional(),
   price: Joi.number().positive().optional(),
   language: Joi.string().optional(),
