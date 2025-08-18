@@ -50,15 +50,11 @@ exports.createCategory = async (req, res) => {
   }
 };
 
-// Read
-// --> Get All Categories
+// Get All Categories
 exports.getAllCategories = async (_, res) => {
   try {
     // get all entry from db
-    const allCategories = await Category.find(
-      {},
-      { name: true, description: true }
-    );
+    const allCategories = await Category.find();
 
     // return response
     return res.status(200).json({
